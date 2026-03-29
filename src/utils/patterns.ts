@@ -1512,11 +1512,11 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
 
   const likesBase = config.includeLikes ? distributeLikesProportional(provisionalRuns, likesTotal) : viewRuns.map(() => 0);
   const sharesBase = config.includeShares
-  ? distributeByViewsProportional(provisionalRuns, sharesTotal, 1)
+  ? distributeSharesWithVariation(provisionalRuns, sharesTotal, minViewsPerRun)
   : viewRuns.map(() => 0);
 
 const savesBase = config.includeSaves
-  ? distributeByViewsProportional(provisionalRuns, savesTotal, 10)
+  ? distributeSavesWithVariation(provisionalRuns, savesTotal, minViewsPerRun)
   : viewRuns.map(() => 0);
 
   const likesRuns = likesBase;
