@@ -1089,285 +1089,61 @@ function distributeLikesProportional(runs: { views: number }[], targetTotal: num
   return scaled;
 }
 
-// 🔥 NEW: Function for SAVES with proper variation and scaling
-function distributeSavesWithVariation(
+function distributeByViewsProportional(
   runs: { views: number }[],
   targetTotal: number,
-  minViewsPerRun: number
+  minPerRun = 1
 ): number[] {
   if (runs.length === 0) return [];
-  if (targetTotal <= 0) return Array(runs.length).fill(0);
 
   const result = Array.from({ length: runs.length }, () => 0);
 
-  // 🔥 Scale minimum and maximum with minViewsPerRun
-  // 100 views -> saves: 10-18
-  // 200 views -> saves: 12-22
-  // 500 views -> saves: 18-35
-  // 1000 views -> saves: 25-50
-  const scaleFactor = minViewsPerRun / 100;
-  const minSaves = Math.max(10, Math.floor(10 + (scaleFactor - 1) * 6));
-  const maxSaves = Math.max(minSaves + 8, Math.floor(minSaves * 2.2));
+  const totalViews = Math.max(1, runs.reduce((sum, r) => sum + r.views, 0));
 
-  // Calculate how many runs can receive saves
-  const maxRunsWeCanFill = Math.floor(targetTotal / minSaves);
-  
-  // Select 40-65% of runs
-  const desiredPercentage = 0.4 + Math.random() * 0.25;
-  const desiredCount = Math.floor(runs.length * desiredPercentage);
-  const activeCount = Math.min(maxRunsWeCanFill, Math.max(1, desiredCount));
+  // 🔥 STEP 1: select only some runs (30–60%)
+  const runCount = runs.length;
+  const activeCount = Math.max(
+    1,
+    Math.floor(runCount * (0.3 + Math.random() * 0.3))
+  );
 
-  if (activeCount === 0) return result;
+  // pick random unique indexes
+  const indexes = [...Array(runCount).keys()]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, activeCount);
 
-  // Select runs weighted by views with randomness
-  const weightedIndexes = runs
-    .map((r, i) => ({ index: i, weight: r.views * (0.7 + Math.random() * 0.6) }))
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, activeCount)
-    .map(item => item.index)
-    .sort((a, b) => a - b);
+  // 🔥 STEP 2: distribute only among selected runs
+  const selectedRuns = indexes.map(i => runs[i]);
+  const selectedViews = selectedRuns.reduce((s, r) => s + r.views, 0);
 
-  // Calculate target average per selected run
-  const avgPerRun = targetTotal / activeCount;
-  
-  // 🔥 Generate varied values - this is the key fix
-  const values: number[] = [];
-  const usedValues = new Set<number>();
-  
-  for (let i = 0; i < activeCount; i++) {
-    const runIndex = weightedIndexes[i];
-    const runViews = runs[runIndex].views;
-    
-    // Base value proportional to views with variation
-    const viewWeight = runViews / Math.max(1, runs.reduce((s, r) => s + r.views, 0) / runs.length);
-    const baseValue = avgPerRun * (0.7 + viewWeight * 0.6);
-    
-    // Add random variation ±35%
-    const variance = baseValue * 0.35;
-    let value = Math.round(baseValue + (Math.random() * 2 - 1) * variance);
-    
-    // Clamp to valid range
-    value = Math.max(minSaves, Math.min(maxSaves, value));
-    
-    // 🔥 Ensure this value is different from recent values
-    let attempts = 0;
-    while (usedValues.has(value) && attempts < 10) {
-      const nudge = Math.floor(Math.random() * 5) + 1;
-      const direction = Math.random() < 0.5 ? -1 : 1;
-      const newValue = value + direction * nudge;
-      
-      if (newValue >= minSaves && newValue <= maxSaves) {
-        value = newValue;
-      } else if (value + nudge <= maxSaves) {
-        value = value + nudge;
-      } else if (value - nudge >= minSaves) {
-        value = value - nudge;
-      }
-      attempts++;
-    }
-    
-    // Track last 3 values to avoid repetition
-    if (usedValues.size >= 3) {
-      const oldest = [...usedValues][0];
-      usedValues.delete(oldest);
-    }
-    usedValues.add(value);
-    
-    values.push(value);
-  }
-
-  // 🔥 Adjust total to match target
-  let sum = values.reduce((a, b) => a + b, 0);
-  let diff = targetTotal - sum;
-  let iterations = 0;
-  const maxIterations = activeCount * 150;
-
-  while (diff !== 0 && iterations < maxIterations) {
-    const idx = Math.floor(Math.random() * activeCount);
-    
-    if (diff > 0 && values[idx] < maxSaves) {
-      // Add more, but try to maintain variation
-      const addAmount = Math.min(diff, Math.floor(Math.random() * 3) + 1);
-      if (values[idx] + addAmount <= maxSaves) {
-        values[idx] += addAmount;
-        diff -= addAmount;
-      } else {
-        values[idx]++;
-        diff--;
-      }
-    } else if (diff < 0 && values[idx] > minSaves) {
-      const subAmount = Math.min(-diff, Math.floor(Math.random() * 3) + 1);
-      if (values[idx] - subAmount >= minSaves) {
-        values[idx] -= subAmount;
-        diff += subAmount;
-      } else {
-        values[idx]--;
-        diff++;
-      }
-    }
-    iterations++;
-  }
-
-  // 🔥 Final pass: ensure no consecutive identical values
-  for (let i = 1; i < values.length; i++) {
-    if (values[i] === values[i - 1]) {
-      const nudge = Math.floor(Math.random() * 4) + 2; // 2-5
-      
-      if (values[i] + nudge <= maxSaves) {
-        values[i] += nudge;
-        // Balance by reducing another value
-        for (let j = 0; j < values.length; j++) {
-          if (j !== i && values[j] - nudge >= minSaves) {
-            values[j] -= nudge;
-            break;
-          }
-        }
-      } else if (values[i] - nudge >= minSaves) {
-        values[i] -= nudge;
-        // Balance by increasing another value
-        for (let j = 0; j < values.length; j++) {
-          if (j !== i && values[j] + nudge <= maxSaves) {
-            values[j] += nudge;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  // 🔥 Check for any remaining duplicates and add micro-variations
-  for (let i = 0; i < values.length; i++) {
-    for (let j = i + 1; j < values.length; j++) {
-      if (values[i] === values[j] && Math.abs(i - j) <= 2) {
-        if (values[j] + 1 <= maxSaves) values[j]++;
-        else if (values[j] - 1 >= minSaves) values[j]--;
-      }
-    }
-  }
-
-  // Assign to result
-  weightedIndexes.forEach((runIndex, i) => {
-    result[runIndex] = values[i];
+  const raw = selectedRuns.map(r => {
+    const base = (r.views / selectedViews) * targetTotal;
+    const variation = base * (Math.random() * 0.4 - 0.2);
+    return base + variation;
   });
 
-  return result;
-}
+  let values = raw.map(v => Math.max(minPerRun, Math.round(v)));
 
-// 🔥 NEW: Function for SHARES with proper variation and scaling
-function distributeSharesWithVariation(
-  runs: { views: number }[],
-  targetTotal: number,
-  minViewsPerRun: number
-): number[] {
-  if (runs.length === 0) return [];
-  if (targetTotal <= 0) return Array(runs.length).fill(0);
+  // fix total
+  let diff = targetTotal - values.reduce((a, b) => a + b, 0);
+  let i = 0;
 
-  const result = Array.from({ length: runs.length }, () => 0);
+  while (diff !== 0 && i < 10000) {
+    const idx = i % values.length;
 
-  // 🔥 Scale minimum and maximum with minViewsPerRun
-  // 100 views -> shares: 10-20
-  // 200 views -> shares: 14-28
-  // 500 views -> shares: 22-45
-  // 1000 views -> shares: 35-70
-  const scaleFactor = minViewsPerRun / 100;
-  const minShares = Math.max(10, Math.floor(10 + (scaleFactor - 1) * 10));
-  const maxShares = Math.max(minShares + 10, Math.floor(minShares * 2.5));
-
-  // Calculate how many runs can receive shares
-  const maxRunsWeCanFill = Math.floor(targetTotal / minShares);
-  
-  // Select 35-55% of runs for shares (less frequent than saves)
-  const desiredPercentage = 0.35 + Math.random() * 0.2;
-  const desiredCount = Math.floor(runs.length * desiredPercentage);
-  const activeCount = Math.min(maxRunsWeCanFill, Math.max(1, desiredCount));
-
-  if (activeCount === 0) return result;
-
-  // Select runs weighted by views
-  const weightedIndexes = runs
-    .map((r, i) => ({ index: i, weight: r.views * (0.6 + Math.random() * 0.8) }))
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, activeCount)
-    .map(item => item.index)
-    .sort((a, b) => a - b);
-
-  const avgPerRun = targetTotal / activeCount;
-  
-  // Generate varied values
-  const values: number[] = [];
-  const recentValues: number[] = [];
-  
-  for (let i = 0; i < activeCount; i++) {
-    const runIndex = weightedIndexes[i];
-    const runViews = runs[runIndex].views;
-    
-    // Proportional base with variation
-    const avgViews = runs.reduce((s, r) => s + r.views, 0) / runs.length;
-    const viewWeight = runViews / Math.max(1, avgViews);
-    const baseValue = avgPerRun * (0.6 + viewWeight * 0.8);
-    
-    // Add variation ±40%
-    const variance = baseValue * 0.4;
-    let value = Math.round(baseValue + (Math.random() * 2 - 1) * variance);
-    
-    value = Math.max(minShares, Math.min(maxShares, value));
-    
-    // Ensure different from last 3 values
-    let attempts = 0;
-    while (recentValues.includes(value) && attempts < 12) {
-      const nudge = Math.floor(Math.random() * 6) + 2;
-      const direction = Math.random() < 0.5 ? -1 : 1;
-      const newValue = value + direction * nudge;
-      
-      if (newValue >= minShares && newValue <= maxShares) {
-        value = newValue;
-      }
-      attempts++;
+    if (diff > 0) {
+      values[idx]++;
+      diff--;
+    } else if (values[idx] > minPerRun) {
+      values[idx]--;
+      diff++;
     }
-    
-    // Track recent values
-    recentValues.push(value);
-    if (recentValues.length > 3) recentValues.shift();
-    
-    values.push(value);
+
+    i++;
   }
 
-  // Adjust total
-  let sum = values.reduce((a, b) => a + b, 0);
-  let diff = targetTotal - sum;
-  let iterations = 0;
-
-  while (diff !== 0 && iterations < activeCount * 150) {
-    const idx = Math.floor(Math.random() * activeCount);
-    
-    if (diff > 0 && values[idx] < maxShares) {
-      const add = Math.min(diff, Math.floor(Math.random() * 4) + 1);
-      values[idx] += add;
-      diff -= add;
-    } else if (diff < 0 && values[idx] > minShares) {
-      const sub = Math.min(-diff, Math.floor(Math.random() * 4) + 1);
-      if (values[idx] - sub >= minShares) {
-        values[idx] -= sub;
-        diff += sub;
-      }
-    }
-    iterations++;
-  }
-
-  // Final duplicate removal
-  for (let i = 1; i < values.length; i++) {
-    if (values[i] === values[i - 1]) {
-      const nudge = Math.floor(Math.random() * 5) + 2;
-      if (values[i] + nudge <= maxShares) {
-        values[i] += nudge;
-      } else if (values[i] - nudge >= minShares) {
-        values[i] -= nudge;
-      }
-    }
-  }
-
-  // Assign to result
-  weightedIndexes.forEach((runIndex, i) => {
+  // 🔥 STEP 3: assign back only to selected runs
+  indexes.forEach((runIndex, i) => {
     result[runIndex] = values[i];
   });
 
@@ -1512,11 +1288,11 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
 
   const likesBase = config.includeLikes ? distributeLikesProportional(provisionalRuns, likesTotal) : viewRuns.map(() => 0);
   const sharesBase = config.includeShares
-  ? distributeSharesWithVariation(provisionalRuns, sharesTotal, minViewsPerRun)
+  ? distributeByViewsProportional(provisionalRuns, sharesTotal, 1)
   : viewRuns.map(() => 0);
 
 const savesBase = config.includeSaves
-  ? distributeSavesWithVariation(provisionalRuns, savesTotal, minViewsPerRun)
+  ? distributeByViewsProportional(provisionalRuns, savesTotal, 10)
   : viewRuns.map(() => 0);
 
   const likesRuns = likesBase;
