@@ -1095,41 +1095,54 @@ function distributeByViewsProportional(
   minPerRun = 1
 ): number[] {
   if (runs.length === 0) return [];
+  if (targetTotal < minPerRun) return Array(runs.length).fill(0);
 
   const result = Array.from({ length: runs.length }, () => 0);
-
   const totalViews = Math.max(1, runs.reduce((sum, r) => sum + r.views, 0));
 
-  // 🔥 STEP 1: select only some runs (30–60%)
-  const runCount = runs.length;
+  // 🔥 FIX: Calculate how many runs we need based on target total and min per run
+  const minRequiredRuns = Math.ceil(targetTotal / minPerRun);
+  
+  // 🔥 FIX: Use proportional selection (50-80% of runs) but ensure we have enough runs
+  const minRunPercentage = 0.5; // At least 50% of runs
+  const maxRunPercentage = 0.8; // At most 80% of runs
+  const targetRunPercentage = minRunPercentage + Math.random() * (maxRunPercentage - minRunPercentage);
+  
   const activeCount = Math.max(
-    1,
-    Math.floor(runCount * (0.3 + Math.random() * 0.3))
+    minRequiredRuns, // Ensure enough runs to hit target
+    Math.min(
+      runs.length,
+      Math.floor(runs.length * targetRunPercentage)
+    )
   );
 
-  // pick random unique indexes
-  const indexes = [...Array(runCount).keys()]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, activeCount);
+  // 🔥 FIX: Weight selection by views to pick high-performing runs
+  const weightedIndexes = runs
+    .map((r, i) => ({ index: i, weight: r.views }))
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, activeCount)
+    .map(item => item.index)
+    .sort((a, b) => a - b); // Sort back to chronological order
 
-  // 🔥 STEP 2: distribute only among selected runs
-  const selectedRuns = indexes.map(i => runs[i]);
-  const selectedViews = selectedRuns.reduce((s, r) => s + r.views, 0);
+  const selectedRuns = weightedIndexes.map(i => runs[i]);
+  const selectedViews = selectedRuns.reduce((s, r) => s + r.views, 0) || 1;
 
+  // Distribute proportionally among selected runs
   const raw = selectedRuns.map(r => {
     const base = (r.views / selectedViews) * targetTotal;
-    const variation = base * (Math.random() * 0.4 - 0.2);
+    const variation = base * (Math.random() * 0.3 - 0.15); // ±15% variation
     return base + variation;
   });
 
   let values = raw.map(v => Math.max(minPerRun, Math.round(v)));
 
-  // fix total
+  // Fix total to match target exactly
   let diff = targetTotal - values.reduce((a, b) => a + b, 0);
-  let i = 0;
+  let attempts = 0;
+  const maxAttempts = values.length * 100;
 
-  while (diff !== 0 && i < 10000) {
-    const idx = i % values.length;
+  while (diff !== 0 && attempts < maxAttempts) {
+    const idx = attempts % values.length;
 
     if (diff > 0) {
       values[idx]++;
@@ -1139,17 +1152,16 @@ function distributeByViewsProportional(
       diff++;
     }
 
-    i++;
+    attempts++;
   }
 
-  // 🔥 STEP 3: assign back only to selected runs
-  indexes.forEach((runIndex, i) => {
+  // Assign back to result array
+  weightedIndexes.forEach((runIndex, i) => {
     result[runIndex] = values[i];
   });
 
   return result;
 }
-
 function normalizeSharesRuns(values: number[], minimum: number): number[] {
   const result = Array.from({ length: values.length }, () => 0);
   if (values.length === 0) return result;
