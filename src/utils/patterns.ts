@@ -1322,7 +1322,16 @@ const savesBase = config.includeSaves
 
   const likesRuns = likesBase;
   const sharesRuns = normalizeSharesRuns(sharesBase, 20);
-  const savesRuns = clearFirstRun(savesBase);
+  const savesRuns = clearFirstRun(
+  savesBase.map(v => {
+    if (v <= 0) return 0;
+
+    // 🔥 add variation AFTER min constraint
+    const variation = Math.floor(v * (Math.random() * 0.4)); // up to +40%
+
+    return v + variation;
+  })
+);
 
   let cumulativeViews = 0;
   let cumulativeLikes = 0;
