@@ -1096,60 +1096,30 @@ function distributeByViewsProportional(
 ): number[] {
   if (runs.length === 0) return [];
 
-  const result = Array.from({ length: runs.length }, () => 0);
-
   const totalViews = Math.max(1, runs.reduce((sum, r) => sum + r.views, 0));
 
-  // 🔥 STEP 1: select only some runs (30–60%)
-  const runCount = runs.length;
-  const activeCount = Math.max(
-    1,
-    Math.floor(runCount * (0.3 + Math.random() * 0.3))
-  );
+  const raw = runs.map(r => (r.views / totalViews) * targetTotal);
+  const rounded = raw.map(v => Math.max(minPerRun, Math.round(v)));
 
-  // pick random unique indexes
-  const indexes = [...Array(runCount).keys()]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, activeCount);
+  let diff = targetTotal - rounded.reduce((a, b) => a + b, 0);
 
-  // 🔥 STEP 2: distribute only among selected runs
-  const selectedRuns = indexes.map(i => runs[i]);
-  const selectedViews = selectedRuns.reduce((s, r) => s + r.views, 0);
-
-  const raw = selectedRuns.map(r => {
-    const base = (r.views / selectedViews) * targetTotal;
-    const variation = base * (Math.random() * 0.4 - 0.2);
-    return base + variation;
-  });
-
-  let values = raw.map(v => Math.max(minPerRun, Math.round(v)));
-
-  // fix total
-  let diff = targetTotal - values.reduce((a, b) => a + b, 0);
   let i = 0;
-
   while (diff !== 0 && i < 10000) {
-    const idx = i % values.length;
+    const idx = i % rounded.length;
 
     if (diff > 0) {
-      values[idx]++;
+      rounded[idx]++;
       diff--;
-    } else if (values[idx] > minPerRun) {
-      values[idx]--;
+    } else if (rounded[idx] > minPerRun) {
+      rounded[idx]--;
       diff++;
     }
 
     i++;
   }
 
-  // 🔥 STEP 3: assign back only to selected runs
-  indexes.forEach((runIndex, i) => {
-    result[runIndex] = values[i];
-  });
-
-  return result;
+  return rounded;
 }
-
 function normalizeSharesRuns(values: number[], minimum: number): number[] {
   const result = Array.from({ length: values.length }, () => 0);
   if (values.length === 0) return result;
