@@ -1099,7 +1099,10 @@ function distributeByViewsProportional(
   const totalViews = Math.max(1, runs.reduce((sum, r) => sum + r.views, 0));
 
   const raw = runs.map(r => (r.views / totalViews) * targetTotal);
-  const rounded = raw.map(v => Math.max(minPerRun, Math.round(v)));
+  const rounded = raw.map(v => {
+  if (v <= 0) return 0; // allow zero runs
+  return Math.max(minPerRun, Math.round(v));
+});
 
   let diff = targetTotal - rounded.reduce((a, b) => a + b, 0);
 
@@ -1263,7 +1266,7 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   : viewRuns.map(() => 0);
 
 const savesBase = config.includeSaves
-  ? distributeByViewsProportional(provisionalRuns, savesTotal, 1)
+  ? distributeByViewsProportional(provisionalRuns, savesTotal, 10)
   : viewRuns.map(() => 0);
 
   const likesRuns = likesBase;
