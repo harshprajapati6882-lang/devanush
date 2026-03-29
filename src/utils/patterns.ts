@@ -1089,37 +1089,6 @@ function distributeLikesProportional(runs: { views: number }[], targetTotal: num
   return scaled;
 }
 
-function distributeByViewsProportional(
-  runs: { views: number }[],
-  targetTotal: number,
-  minPerRun = 1
-): number[] {
-  if (runs.length === 0) return [];
-
-  const totalViews = Math.max(1, runs.reduce((sum, r) => sum + r.views, 0));
-
-  const raw = runs.map(r => (r.views / totalViews) * targetTotal);
-  const rounded = raw.map(v => Math.max(minPerRun, Math.round(v)));
-
-  let diff = targetTotal - rounded.reduce((a, b) => a + b, 0);
-
-  let i = 0;
-  while (diff !== 0 && i < 10000) {
-    const idx = i % rounded.length;
-
-    if (diff > 0) {
-      rounded[idx]++;
-      diff--;
-    } else if (rounded[idx] > minPerRun) {
-      rounded[idx]--;
-      diff++;
-    }
-
-    i++;
-  }
-
-  return rounded;
-}
 function normalizeSharesRuns(values: number[], minimum: number): number[] {
   const result = Array.from({ length: values.length }, () => 0);
   if (values.length === 0) return result;
@@ -1257,13 +1226,8 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   const savesTotal = config.includeSaves ? Math.max(10, Math.floor(totalViews * savesRatio)) : 0;
 
   const likesBase = config.includeLikes ? distributeLikesProportional(provisionalRuns, likesTotal) : viewRuns.map(() => 0);
-  const sharesBase = config.includeShares
-  ? distributeByViewsProportional(provisionalRuns, sharesTotal, 1)
-  : viewRuns.map(() => 0);
-
-const savesBase = config.includeSaves
-  ? distributeByViewsProportional(provisionalRuns, savesTotal, 10)
-  : viewRuns.map(() => 0);
+  const sharesBase = config.includeShares ? distributeEngagement(provisionalRuns, sharesTotal, config.peakHoursBoost, "shares") : viewRuns.map(() => 0);
+  const savesBase = config.includeSaves ? distributeEngagement(provisionalRuns, savesTotal, config.peakHoursBoost, "saves") : viewRuns.map(() => 0);
 
   const likesRuns = likesBase;
   const sharesRuns = normalizeSharesRuns(sharesBase, 20);
