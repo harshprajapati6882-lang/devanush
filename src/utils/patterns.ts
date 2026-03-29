@@ -1141,9 +1141,29 @@ function distributeEngagementSynced(
   const selectedViews = selectedRuns.reduce((s, r) => s + r.views, 0);
 
   let values = selectedRuns.map(r => {
-    const base = (r.views / selectedViews) * targetTotal;
-    const variation = base * (Math.random() * 0.3 - 0.15);
-    return Math.max(minPerRun, Math.round(base + variation));
+    const t = runs.findIndex(x => x === r) / Math.max(1, runs.length - 1);
+
+// 🔥 threshold: ignore low-view runs (important)
+const viewRatio = r.views / maxViews;
+if (viewRatio < 0.25) return 0;
+
+// 🔥 base proportional
+let base = (r.views / selectedViews) * targetTotal;
+
+// 🔥 mid boost (viral zone)
+if (t > 0.3 && t < 0.7) {
+  base *= 1.3 + Math.random() * 0.4;
+}
+
+// 🔥 late decay
+if (t > 0.75) {
+  base *= 0.6 + Math.random() * 0.3;
+}
+
+// 🔥 variation
+const variation = base * (Math.random() * 0.3 - 0.15);
+
+return Math.max(minPerRun, Math.round(base + variation));
   });
 
   // fix total
@@ -1396,7 +1416,7 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
 
   const likesBase = config.includeLikes ? distributeLikesProportional(provisionalRuns, likesTotal) : viewRuns.map(() => 0);
   const sharesBase = config.includeShares
-  ? distributeEngagementSynced(provisionalRuns, sharesTotal, 1, 0.35)
+  ? distributeEngagementSynced(provisionalRuns, sharesTotal, 1, 0.25)
   : viewRuns.map(() => 0);
 
 const savesBase = config.includeSaves
