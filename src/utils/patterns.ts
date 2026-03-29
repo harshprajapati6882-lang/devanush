@@ -1099,26 +1099,51 @@ function distributeByViewsProportional(
   const result = Array.from({ length: runs.length }, () => 0);
 
   const totalViews = Math.max(1, runs.reduce((sum, r) => sum + r.views, 0));
+  const maxViews = Math.max(...runs.map(r => r.views));
 
-  // 🔥 STEP 1: select only some runs (30–60%)
+  // 🔥 STEP 1: weight runs (favor mid + high)
+  const weights = runs.map((r, i) => {
+    const t = i / Math.max(1, runs.length - 1); // timeline position
+
+    const viewWeight = r.views / maxViews; // high views = high weight
+
+    const phaseWeight =
+      t < 0.2 ? 0.3 :      // early low
+      t < 0.7 ? 1.2 :      // mid HIGH
+      0.8;                 // late medium
+
+    return Math.max(0.01, viewWeight * phaseWeight);
+  });
+
+  // 🔥 STEP 2: pick runs based on weight (not random)
   const runCount = runs.length;
-  const activeCount = Math.max(
-    1,
-    Math.floor(runCount * (0.3 + Math.random() * 0.3))
-  );
+  const activeCount = Math.max(1, Math.floor(runCount * (0.25 + Math.random() * 0.25)));
 
-  // pick random unique indexes
-  const indexes = [...Array(runCount).keys()]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, activeCount);
+  const selectedIndexes: number[] = [];
 
-  // 🔥 STEP 2: distribute only among selected runs
-  const selectedRuns = indexes.map(i => runs[i]);
+  const weightPool = weights.map((w, i) => ({ w, i }));
+
+  while (selectedIndexes.length < activeCount && weightPool.length > 0) {
+    const totalW = weightPool.reduce((s, x) => s + x.w, 0);
+    let rand = Math.random() * totalW;
+
+    for (let j = 0; j < weightPool.length; j++) {
+      rand -= weightPool[j].w;
+      if (rand <= 0) {
+        selectedIndexes.push(weightPool[j].i);
+        weightPool.splice(j, 1);
+        break;
+      }
+    }
+  }
+
+  // 🔥 STEP 3: distribute among selected
+  const selectedRuns = selectedIndexes.map(i => runs[i]);
   const selectedViews = selectedRuns.reduce((s, r) => s + r.views, 0);
 
   const raw = selectedRuns.map(r => {
     const base = (r.views / selectedViews) * targetTotal;
-    const variation = base * (Math.random() * 0.4 - 0.2);
+    const variation = base * (Math.random() * 0.4 - 0.2); // ±20%
     return base + variation;
   });
 
@@ -1142,8 +1167,8 @@ function distributeByViewsProportional(
     i++;
   }
 
-  // 🔥 STEP 3: assign back only to selected runs
-  indexes.forEach((runIndex, i) => {
+  // 🔥 STEP 4: assign back
+  selectedIndexes.forEach((runIndex, i) => {
     result[runIndex] = values[i];
   });
 
