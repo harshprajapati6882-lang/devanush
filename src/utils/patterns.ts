@@ -1396,11 +1396,11 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
 
   const likesBase = config.includeLikes ? distributeLikesProportional(provisionalRuns, likesTotal) : viewRuns.map(() => 0);
   const sharesBase = config.includeShares
-  ? distributeByViewsProportional(provisionalRuns, sharesTotal, 1)
+  ? distributeEngagementSynced(provisionalRuns, sharesTotal, 1, 0.35)
   : viewRuns.map(() => 0);
 
 const savesBase = config.includeSaves
-  ? distributeByViewsProportional(provisionalRuns, savesTotal, 10)
+  ? distributeEngagementSynced(provisionalRuns, savesTotal, 10, 0.4)
   : viewRuns.map(() => 0);
 
   const likesRuns = likesBase;
