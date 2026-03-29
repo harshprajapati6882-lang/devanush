@@ -1148,7 +1148,7 @@ function distributeByViewsProportional(
   });
 
   return result;
-}
+} 
 
 function normalizeSharesRuns(values: number[], minimum: number): number[] {
   const result = Array.from({ length: values.length }, () => 0);
