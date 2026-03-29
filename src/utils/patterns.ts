@@ -1098,12 +1098,29 @@ function distributeByViewsProportional(
 
   const totalViews = Math.max(1, runs.reduce((sum, r) => sum + r.views, 0));
 
-  const raw = runs.map(r => (r.views / totalViews) * targetTotal);
-  const rounded = raw.map(v => {
-  if (v <= 0) return 0; // allow zero runs
-  return Math.max(minPerRun, Math.round(v));
-});
+  // 🔥 add natural variation + scaling
+  const raw = runs.map(r => {
+    const base = (r.views / totalViews) * targetTotal;
 
+    // variation factor (prevents same values)
+    const variation = base * (Math.random() * 0.4 - 0.2); // ±20%
+
+    return base + variation;
+  });
+
+  let rounded = raw.map(v => {
+    if (v <= 0) return 0;
+
+    // 🔥 dynamic minimum scaling with views
+    const dynamicMin = Math.max(
+      minPerRun,
+      Math.floor(v * 0.6) // prevents everything becoming 10
+    );
+
+    return Math.max(dynamicMin, Math.round(v));
+  });
+
+  // 🔧 fix total drift
   let diff = targetTotal - rounded.reduce((a, b) => a + b, 0);
 
   let i = 0;
