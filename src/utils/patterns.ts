@@ -1089,92 +1089,6 @@ function distributeLikesProportional(runs: { views: number }[], targetTotal: num
   return scaled;
 }
 
-function distributeByViewsProportional(
-  runs: { views: number }[],
-  targetTotal: number,
-  minPerRun = 1
-): number[] {
-  if (runs.length === 0) return [];
-
-  const result = Array.from({ length: runs.length }, () => 0);
-
-  const totalViews = Math.max(1, runs.reduce((sum, r) => sum + r.views, 0));
-  const maxViews = Math.max(...runs.map(r => r.views));
-
-  // 🔥 STEP 1: weight runs (favor mid + high)
-  const weights = runs.map((r, i) => {
-    const t = i / Math.max(1, runs.length - 1); // timeline position
-
-    const viewWeight = r.views / maxViews; // high views = high weight
-
-    const phaseWeight =
-      t < 0.2 ? 0.3 :      // early low
-      t < 0.7 ? 1.2 :      // mid HIGH
-      0.8;                 // late medium
-
-    return Math.max(0.01, viewWeight * phaseWeight);
-  });
-
-  // 🔥 STEP 2: pick runs based on weight (not random)
-  const runCount = runs.length;
-  const activeCount = Math.max(1, Math.floor(runCount * (0.25 + Math.random() * 0.25)));
-
-  const selectedIndexes: number[] = [];
-
-  const weightPool = weights.map((w, i) => ({ w, i }));
-
-  while (selectedIndexes.length < activeCount && weightPool.length > 0) {
-    const totalW = weightPool.reduce((s, x) => s + x.w, 0);
-    let rand = Math.random() * totalW;
-
-    for (let j = 0; j < weightPool.length; j++) {
-      rand -= weightPool[j].w;
-      if (rand <= 0) {
-        selectedIndexes.push(weightPool[j].i);
-        weightPool.splice(j, 1);
-        break;
-      }
-    }
-  }
-
-  // 🔥 STEP 3: distribute among selected
-  const selectedRuns = selectedIndexes.map(i => runs[i]);
-  const selectedViews = selectedRuns.reduce((s, r) => s + r.views, 0);
-
-  const raw = selectedRuns.map(r => {
-    const base = (r.views / selectedViews) * targetTotal;
-    const variation = base * (Math.random() * 0.4 - 0.2); // ±20%
-    return base + variation;
-  });
-
-  let values = raw.map(v => Math.max(minPerRun, Math.round(v)));
-
-  // fix total
-  let diff = targetTotal - values.reduce((a, b) => a + b, 0);
-  let i = 0;
-
-  while (diff !== 0 && i < 10000) {
-    const idx = i % values.length;
-
-    if (diff > 0) {
-      values[idx]++;
-      diff--;
-    } else if (values[idx] > minPerRun) {
-      values[idx]--;
-      diff++;
-    }
-
-    i++;
-  }
-
-  // 🔥 STEP 4: assign back
-  selectedIndexes.forEach((runIndex, i) => {
-    result[runIndex] = values[i];
-  });
-
-  return result;
-} 
-
 function normalizeSharesRuns(values: number[], minimum: number): number[] {
   const result = Array.from({ length: values.length }, () => 0);
   if (values.length === 0) return result;
@@ -1312,13 +1226,8 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   const savesTotal = config.includeSaves ? Math.max(10, Math.floor(totalViews * savesRatio)) : 0;
 
   const likesBase = config.includeLikes ? distributeLikesProportional(provisionalRuns, likesTotal) : viewRuns.map(() => 0);
-  const sharesBase = config.includeShares
-  ? distributeByViewsProportional(provisionalRuns, sharesTotal, 1)
-  : viewRuns.map(() => 0);
-
-const savesBase = config.includeSaves
-  ? distributeByViewsProportional(provisionalRuns, savesTotal, 10)
-  : viewRuns.map(() => 0);
+  const sharesBase = config.includeShares ? distributeEngagement(provisionalRuns, sharesTotal, config.peakHoursBoost, "shares") : viewRuns.map(() => 0);
+  const savesBase = config.includeSaves ? distributeEngagement(provisionalRuns, savesTotal, config.peakHoursBoost, "saves") : viewRuns.map(() => 0);
 
   const likesRuns = likesBase;
   const sharesRuns = normalizeSharesRuns(sharesBase, 20);
