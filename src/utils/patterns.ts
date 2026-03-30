@@ -1011,7 +1011,7 @@ function distributeLikesProportional(runs: { views: number }[], targetTotal: num
   if (runs.length === 0) return [];
 
   const totalViews = Math.max(1, runs.reduce((sum, run) => sum + Math.max(0, run.views), 0));
-  const minimumPerRun = 10;
+  const minimumPerRun = targetTotal / runs.length < 12 ? 0 : 10;
   const likesTarget = Math.max(targetTotal, runs.length * minimumPerRun);
 
   const baseShares = runs.map((run) => (Math.max(0, run.views) / totalViews) * likesTarget);
