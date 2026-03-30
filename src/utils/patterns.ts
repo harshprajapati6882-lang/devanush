@@ -1017,10 +1017,7 @@ function distributeLikesProportional(runs: { views: number }[], targetTotal: num
   const baseShares = runs.map((run) => (Math.max(0, run.views) / totalViews) * likesTarget);
   const withVariation = baseShares.map((base) => base * random(0.8, 1.2));
 
-  const preliminary = withVariation.map((value) => {
-  if (value < 10) return 0; // ❌ remove small values
-  return Math.max(10, Math.round(value)); // ✅ enforce ≥10
-});
+  const preliminary = withVariation.map((value) => Math.max(minimumPerRun, Math.round(value)));
   const baseFloor = runs.length * minimumPerRun;
   const currentExtra = preliminary.reduce((sum, value) => sum + (value - minimumPerRun), 0);
   const targetExtra = Math.max(0, likesTarget - baseFloor);
@@ -1306,7 +1303,7 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   });
 
   const totalViews = provisionalRuns.reduce((acc, run) => acc + run.views, 0);
-  const likesRatio = random(0.03, 0.05);
+  const likesRatio = random(0.05, 0.07);
   const sharesRatio = random(0.01, 0.02);
   const savesRatio = random(0.005, 0.02);
 
