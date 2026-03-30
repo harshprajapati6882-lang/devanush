@@ -1303,9 +1303,9 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   });
 
   const totalViews = provisionalRuns.reduce((acc, run) => acc + run.views, 0);
-  const likesRatio = random(0.05, 0.08);
-  const sharesRatio = random(0.005, 0.02);
-  const savesRatio = random(0.01, 0.02);
+  const likesRatio = random(0.03, 0.05);
+  const sharesRatio = random(0.01, 0.02);
+  const savesRatio = random(0.005, 0.02);
 
   const likesTotal = config.includeLikes ? Math.max(10, Math.floor(totalViews * likesRatio)) : 0;
   const sharesTotal = config.includeShares ? Math.max(20, Math.floor(totalViews * sharesRatio)) : 0;
