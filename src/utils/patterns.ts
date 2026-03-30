@@ -554,49 +554,82 @@ function createCurveContext(type: PatternType): CurveContext {
     phase: random(0, Math.PI * 2),
     stepCount: randomInt(8, 14),
     wobble: random(0.006, 0.018),
+    macroType: randomInt(1, 4),
   };
 }
 
 function curveValue(type: PatternType, t: number, context: CurveContext): number {
+  const macro = (context as any).macroType || 1;
+
+  let value = 0;
+
   if (type === "smooth-s-curve") {
-    return 1 / (1 + Math.exp(-10 * (t - 0.5)));
-  }
-  if (type === "rocket-launch") {
+    value = 1 / (1 + Math.exp(-10 * (t - 0.5)));
+  } 
+  else if (type === "rocket-launch") {
     const k = 5.2;
-    return (1 - Math.exp(-k * t)) / (1 - Math.exp(-k));
-  }
-  if (type === "sunset-fade") {
+    value = (1 - Math.exp(-k * t)) / (1 - Math.exp(-k));
+  } 
+  else if (type === "sunset-fade") {
     const k = 4.1;
-    return (Math.exp(k * t) - 1) / (Math.exp(k) - 1);
-  }
-  if (type === "viral-spike") {
+    value = (Math.exp(k * t) - 1) / (Math.exp(k) - 1);
+  } 
+  else if (type === "viral-spike") {
     const base = 1 / (1 + Math.exp(-8 * (t - 0.48)));
-    const spikeLift = context.spikes.reduce((acc, spike) => acc + Math.exp(-Math.pow((t - spike.center) / spike.width, 2)) * spike.height, 0);
-    return base + spikeLift;
-  }
-  if (type === "heartbeat") {
+    const spikeLift = context.spikes.reduce(
+      (acc, spike) =>
+        acc + Math.exp(-Math.pow((t - spike.center) / spike.width, 2)) * spike.height,
+      0
+    );
+    value = base + spikeLift;
+  } 
+  else if (type === "heartbeat") {
     const base = Math.pow(t, 1.08);
     const pulse = Math.sin((t * 9.5 + 0.15) * Math.PI + context.phase) * 0.055 * (1 - t * 0.3);
     const microPulse = Math.sin((t * 19 + 0.2) * Math.PI + context.phase * 0.5) * 0.02;
-    return base + pulse + microPulse;
-  }
-  if (type === "sawtooth") {
+    value = base + pulse + microPulse;
+  } 
+  else if (type === "sawtooth") {
     const step = Math.floor(t * context.stepCount) / context.stepCount;
     const remainder = (t * context.stepCount) % 1;
-    return step * 0.86 + remainder * 0.14;
-  }
-  if (type === "micro-burst") {
+    value = step * 0.86 + remainder * 0.14;
+  } 
+  else if (type === "micro-burst") {
     const [a, b, c] = context.burstAnchors;
     const jump1 = t >= a ? 0.12 : 0;
     const jump2 = t >= b ? 0.16 : 0;
     const jump3 = t >= c ? 0.2 : 0;
     const drift = t * 0.58;
     const micro = Math.sin(t * 18 * Math.PI + context.phase) * 0.015;
-    return drift + jump1 + jump2 + jump3 + micro;
+    value = drift + jump1 + jump2 + jump3 + micro;
+  } 
+  else {
+    const phi = 1.618;
+    value = Math.pow(t, phi) + Math.pow(t, 2.6) * 0.18;
   }
 
-  const phi = 1.618;
-  return Math.pow(t, phi) + Math.pow(t, 2.6) * 0.18;
+  // 🔥 MACRO VARIATION (THIS IS THE REAL MAGIC)
+  if (macro === 1) {
+    // slow → spike → plateau
+    value += Math.exp(-Math.pow((t - 0.6) / 0.15, 2)) * 0.25;
+  }
+
+  if (macro === 2) {
+    // early burst → decay
+    value += Math.exp(-t * 4) * 0.2;
+  }
+
+  if (macro === 3) {
+    // flat → sudden jump
+    if (t > 0.5) value += Math.pow((t - 0.5) * 2, 2) * 0.4;
+  }
+
+  if (macro === 4) {
+    // wave pattern
+    value += Math.sin(t * Math.PI * 3) * 0.08;
+  }
+
+  return value;
 }
 
 function normalizeMonotone(values: number[]): number[] {
