@@ -24,6 +24,7 @@ export interface OrderConfig {
   includeLikes: boolean;
   includeShares: boolean;
   includeSaves: boolean;
+  includeComments: boolean;
   variancePercent: number;
   peakHoursBoost: boolean;
   quickPreset: QuickPatternPreset | null;
@@ -39,10 +40,12 @@ export interface RunStep {
   likes: number;
   shares: number;
   saves: number;
+  comments: number;
   cumulativeViews: number;
   cumulativeLikes: number;
   cumulativeShares: number;
   cumulativeSaves: number;
+  cumulativeComments: number;
 }
 
 export interface PatternPlan {
