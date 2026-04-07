@@ -89,11 +89,12 @@ export interface Bundle {
   apiId: string;
   name: string;
   serviceIds: {
-    views: string;
-    likes: string;
-    shares: string;
-    saves: string;
-  };
+  views: string;
+  likes: string;
+  shares: string;
+  saves: string;
+  comments: string;
+};
 }
 
 export interface BackendRunInfo {
