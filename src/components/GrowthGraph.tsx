@@ -29,31 +29,34 @@ function lineTypeForPattern(patternType: PatternPlan["patternType"]) {
 function buildGraphData(plan: PatternPlan) {
   const safeRuns = plan?.runs || [];
   const rows: Array<{
-    label: string;
-    views: number;
-    likes: number;
-    shares: number;
-    saves: number;
-  }> = [];
+  label: string;
+  views: number;
+  likes: number;
+  shares: number;
+  saves: number;
+  comments: number;
+}> = [];
 
   rows.push({
-    label: "0m",
-    views: 0,
-    likes: 0,
-    shares: 0,
-    saves: 0,
-  });
+  label: "0m",
+  views: 0,
+  likes: 0,
+  shares: 0,
+  saves: 0,
+  comments: 0,
+});
 
   for (let index = 0; index < safeRuns.length; index += 1) {
     const current = safeRuns[index];
     const previous = index === 0
-      ? {
-          minutesFromStart: 0,
-          cumulativeViews: 0,
-          cumulativeLikes: 0,
-          cumulativeShares: 0,
-          cumulativeSaves: 0,
-        }
+  ? {
+      minutesFromStart: 0,
+      cumulativeViews: 0,
+      cumulativeLikes: 0,
+      cumulativeShares: 0,
+      cumulativeSaves: 0,
+      cumulativeComments: 0,
+    }
       : safeRuns[index - 1];
 
     const dt = Math.max(1, current.minutesFromStart - previous.minutesFromStart);
@@ -79,6 +82,7 @@ function buildGraphData(plan: PatternPlan) {
       likes: pointValue(previous.cumulativeLikes, current.cumulativeLikes, 0.38, wave * 0.8, false),
       shares: pointValue(previous.cumulativeShares, current.cumulativeShares, 0.38, wave * 0.75, false),
       saves: pointValue(previous.cumulativeSaves, current.cumulativeSaves, 0.38, wave * 0.85, false),
+      comments: pointValue(previous.cumulativeComments, current.cumulativeComments, 0.38, wave * 0.9, false),
     });
 
     rows.push({
@@ -87,6 +91,7 @@ function buildGraphData(plan: PatternPlan) {
       likes: pointValue(previous.cumulativeLikes, current.cumulativeLikes, 0.76, wave * -0.62, false),
       shares: pointValue(previous.cumulativeShares, current.cumulativeShares, 0.76, wave * -0.58, false),
       saves: pointValue(previous.cumulativeSaves, current.cumulativeSaves, 0.76, wave * -0.64, false),
+      comments: pointValue(previous.cumulativeComments, current.cumulativeComments, 0.76, wave * -0.7, false),
     });
 
     rows.push({
@@ -95,6 +100,7 @@ function buildGraphData(plan: PatternPlan) {
       likes: current.cumulativeLikes,
       shares: current.cumulativeShares,
       saves: current.cumulativeSaves,
+      comments: current.cumulativeComments,
     });
   }
 
@@ -173,6 +179,7 @@ export function GrowthGraph({ plan, selectedPreset, onApplyPreset, onGenerate }:
             <Line type={curveType} dataKey="likes" name="Likes" stroke="#a78bfa" strokeWidth={1.8} dot={false} isAnimationActive animationDuration={900} />
             <Line type={curveType} dataKey="shares" name="Shares" stroke="#f59e0b" strokeWidth={1.8} dot={false} isAnimationActive animationDuration={900} />
             <Line type={curveType} dataKey="saves" name="Saves" stroke="#34d399" strokeWidth={1.8} dot={false} isAnimationActive animationDuration={900} />
+            <Line type={curveType} dataKey="comments" name="Comments" stroke="#f472b6" strokeWidth={1.8} dot={false} isAnimationActive animationDuration={900} />
           </LineChart>
         </ResponsiveContainer>
       </motion.div>
