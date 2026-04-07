@@ -1339,18 +1339,23 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   const likesRatio = random(0.05, 0.07);
   const sharesRatio = random(0.01, 0.02);
   const savesRatio = random(0.005, 0.01);
+  const commentsRatio = random(0.001, 0.002); // 0.1%–0.2%
 
   const likesTotal = config.includeLikes ? Math.max(10, Math.floor(totalViews * likesRatio)) : 0;
   const sharesTotal = config.includeShares ? Math.max(20, Math.floor(totalViews * sharesRatio)) : 0;
   const savesTotal = config.includeSaves ? Math.max(10, Math.floor(totalViews * savesRatio)) : 0;
+  const commentsTotal = config.includeComments ? Math.max(5, Math.floor(totalViews * commentsRatio)) : 0;
 
   const likesBase = config.includeLikes ? distributeLikesProportional(provisionalRuns, likesTotal) : viewRuns.map(() => 0);
   const sharesBase = config.includeShares
   ? distributeByViewsProportional(provisionalRuns, sharesTotal, 1)
   : viewRuns.map(() => 0);
 
-const savesBase = config.includeSaves
+  const savesBase = config.includeSaves
   ? distributeByViewsProportional(provisionalRuns, savesTotal, 10)
+  : viewRuns.map(() => 0);
+  const commentsBase = config.includeComments
+  ? distributeByViewsProportional(provisionalRuns, commentsTotal, 2)
   : viewRuns.map(() => 0);
 
   const likesRuns = likesBase;
@@ -1365,17 +1370,24 @@ const savesBase = config.includeSaves
     return v + variation;
   })
 );
+  const commentsRuns = commentsBase.map(v => {
+  if (v <= 0) return 0;
+  const variation = Math.floor(v * (Math.random() * 0.5));
+  return v + variation;
+});
 
   let cumulativeViews = 0;
   let cumulativeLikes = 0;
   let cumulativeShares = 0;
   let cumulativeSaves = 0;
+  let cumulativeComments = 0;
 
   const runs: RunStep[] = provisionalRuns.map((run, index) => {
     cumulativeViews += run.views;
     cumulativeLikes += likesRuns[index];
     cumulativeShares += sharesRuns[index];
     cumulativeSaves += savesRuns[index];
+    cumulativeComments += commentsRuns[index];
 
     return {
       run: index + 1,
@@ -1385,10 +1397,12 @@ const savesBase = config.includeSaves
       likes: likesRuns[index],
       shares: sharesRuns[index],
       saves: savesRuns[index],
+      comments: commentsRuns[index],
       cumulativeViews,
       cumulativeLikes,
       cumulativeShares,
       cumulativeSaves,
+      cumulativeComments,
     };
   });
 
