@@ -77,6 +77,7 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
   const [includeLikes, setIncludeLikes] = useState((prefillOrder?.engagement.likes ?? 0) > 0);
   const [includeShares, setIncludeShares] = useState((prefillOrder?.engagement.shares ?? 0) > 0);
   const [includeSaves, setIncludeSaves] = useState((prefillOrder?.engagement.saves ?? 0) > 0);
+  const [includeComments, setIncludeComments] = useState(false);
   const [variancePercent, setVariancePercent] = useState(40);
   const [peakHoursBoost, setPeakHoursBoost] = useState(false);
   const [quickPreset, setQuickPreset] = useState<QuickPatternPreset | null>(null);
@@ -121,6 +122,7 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
       includeLikes,
       includeShares,
       includeSaves,
+      includeComments,
       variancePercent,
       peakHoursBoost,
       quickPreset,
@@ -607,6 +609,18 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
                 💾 Saves
               </button>
 
+              <button
+  type="button"
+  onClick={() => { setUseClonedPlan(false); setIncludeComments(!includeComments); }}
+  className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium transition ${
+    includeComments
+      ? "border border-pink-500 bg-pink-500/20 text-pink-300"
+      : "border border-gray-600 bg-black text-gray-500"
+  }`}
+>
+  💬 Comments
+</button>
+
               <div className="ml-auto">
                 <button
                   type="button"
@@ -641,21 +655,25 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
                     const likesService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.likes);
                     const sharesService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.shares);
                     const savesService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.saves);
+                    const commentsService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.comments);
                     
                     const totalViewsQty = safePlan.runs.reduce((sum, run) => sum + (run.views || 0), 0);
                     const totalLikesQty = safePlan.runs.reduce((sum, run) => sum + (run.likes || 0), 0);
                     const totalSharesQty = safePlan.runs.reduce((sum, run) => sum + (run.shares || 0), 0);
                     const totalSavesQty = safePlan.runs.reduce((sum, run) => sum + (run.saves || 0), 0);
+                    const totalCommentsQty = safePlan.runs.reduce((sum, run) => sum + (run.comments || 0), 0);
                     
                     const viewsRate = parseFloat(viewsService?.rate || "0");
                     const likesRate = parseFloat(likesService?.rate || "0");
                     const sharesRate = parseFloat(sharesService?.rate || "0");
                     const savesRate = parseFloat(savesService?.rate || "0");
+                    const commentsRate = parseFloat(commentsService?.rate || "0");
                     
                     const viewsPrice = (totalViewsQty / 1000) * viewsRate;
                     const likesPrice = includeLikes ? (totalLikesQty / 1000) * likesRate : 0;
                     const sharesPrice = includeShares ? (totalSharesQty / 1000) * sharesRate : 0;
                     const savesPrice = includeSaves ? (totalSavesQty / 1000) * savesRate : 0;
+                    const commentsPrice = includeComments ? (totalCommentsQty / 1000) * commentsRate : 0;
                     
                     return (
                       <>
@@ -668,6 +686,11 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
                         )}
                         {includeSaves && totalSavesQty > 0 && (
                           <span className="text-[10px] text-gray-400">💾{(totalSavesQty/1000).toFixed(1)}k=₹{savesPrice.toFixed(0)}</span>
+                        )}
+                        {includeComments && totalCommentsQty > 0 && (
+                          <span className="text-[10px] text-gray-400">
+                          💬{(totalCommentsQty/1000).toFixed(1)}k=₹{commentsPrice.toFixed(0)}
+                          </span>
                         )}
                       </>
                     );
@@ -703,7 +726,7 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
                       const sharesPrice = includeShares ? (totalSharesQty / 1000) * sharesRate : 0;
                       const savesPrice = includeSaves ? (totalSavesQty / 1000) * savesRate : 0;
                       
-                      return (viewsPrice + likesPrice + sharesPrice + savesPrice).toFixed(0);
+                      return (viewsPrice + likesPrice + sharesPrice + savesPrice + commentsPrice).toFixed(0);
                     })()}
                   </span>
                 </div>
@@ -794,6 +817,12 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
               return;
             }
 
+            const commentsServiceId = selectedBundle.serviceIds.comments?.trim();
+            if (includeComments && !commentsServiceId) {
+  setCreateError("Bundle has no Comments service.");
+  return;
+}
+
             const quantity = (safePlan?.runs || []).reduce((acc, run) => acc + run.views, 0);
             if (!Number.isFinite(quantity) || quantity <= 0) {
               setCreateError("Quantity must be > 0.");
@@ -820,6 +849,10 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
               setCreateError("Saves must be at least 10.");
               return;
             }
+            if (includeComments && totalCommentsQty < 5) {
+  setCreateError("Comments must be at least 5.");
+  return;
+}
 
             if (quantity > 100000) {
               const proceed = window.confirm("Large mission. Continue?");
@@ -847,12 +880,17 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
               time: run.at.toISOString(),
               quantity: Math.max(0, Math.floor(run.saves)),
             }));
+            const commentsRuns = (safePlan?.runs || []).map((run) => ({
+  time: run.at.toISOString(),
+  quantity: Math.max(0, Math.floor(run.comments || 0)),
+}));
 
             const servicesPayload: {
               views: { serviceId: string; runs: Array<{ time: string; quantity: number }> };
               likes?: { serviceId: string; runs: Array<{ time: string; quantity: number }> };
               shares?: { serviceId: string; runs: Array<{ time: string; quantity: number }> };
               saves?: { serviceId: string; runs: Array<{ time: string; quantity: number }> };
+              comments?: { serviceId: string; runs: Array<{ time: string; quantity: number }> };
             } = {
               views: { serviceId: viewsServiceId, runs: viewRuns },
             };
@@ -860,6 +898,7 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
             if (includeLikes) servicesPayload.likes = { serviceId: likesServiceId, runs: likesRuns };
             if (includeShares) servicesPayload.shares = { serviceId: sharesServiceId, runs: sharesRuns };
             if (includeSaves) servicesPayload.saves = { serviceId: savesServiceId, runs: savesRuns };
+            if (includeComments) servicesPayload.comments = { serviceId: commentsServiceId, runs: commentsRuns };
 
             setIsCreatingOrder(true);
             setCreateSuccess(`Processing ${targets.length} missions...`);
@@ -915,7 +954,7 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
                     patternType: safePlan.patternType,
                     patternName: safePlan.patternName,
                     runs: safePlan?.runs || [],
-                    engagement: { likes: totalLikes, shares: totalShares, saves: totalSaves },
+                    engagement: { likes: totalLikes, shares: totalShares, saves: totalSaves, comments: totalCommentsQty },
                     serviceId: viewsServiceId,
                     selectedAPI: selectedApi.name,
                     selectedBundle: selectedBundle.name,
@@ -944,7 +983,7 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
                     patternType: safePlan.patternType,
                     patternName: safePlan.patternName,
                     runs: safePlan?.runs || [],
-                    engagement: { likes: totalLikes, shares: totalShares, saves: totalSaves },
+                    engagement: { likes: totalLikes, shares: totalShares, saves: totalSaves, comments: totalCommentsQty },
                     serviceId: viewsServiceId,
                     selectedAPI: selectedApi.name,
                     selectedBundle: selectedBundle.name,
