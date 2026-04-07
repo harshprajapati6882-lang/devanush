@@ -165,6 +165,7 @@ export function BundleManager({ apis, bundles, onAddBundle, onUpdateBundle, onDe
   const [likes, setLikes] = useState("");
   const [shares, setShares] = useState("");
   const [saves, setSaves] = useState("");
+  const [comments, setComments] = useState("");
 
   const viewOptions = useMemo(
     () => filterServices(getApiServices(apis, apiId), ["view", "views"]),
@@ -182,6 +183,10 @@ export function BundleManager({ apis, bundles, onAddBundle, onUpdateBundle, onDe
     () => filterServices(getApiServices(apis, apiId), ["save", "saves"]),
     [apis, apiId]
   );
+  const commentOptions = useMemo(
+  () => filterServices(getApiServices(apis, apiId), ["comment", "comments"]),
+  [apis, apiId]
+);
 
   const resetForm = () => {
     setName("");
@@ -190,6 +195,7 @@ export function BundleManager({ apis, bundles, onAddBundle, onUpdateBundle, onDe
     setLikes("");
     setShares("");
     setSaves("");
+    setComments("");
     setEditingBundleId(null);
     setShowForm(false);
   };
@@ -224,15 +230,16 @@ export function BundleManager({ apis, bundles, onAddBundle, onUpdateBundle, onDe
             event.preventDefault();
             if (!name.trim()) return;
             if (!apiId) return;
-            if (!views.trim() || !likes.trim() || !shares.trim() || !saves.trim()) return;
+            if (!views.trim() || !likes.trim() || !shares.trim() || !saves.trim() || !comments.trim()) return;
             const payload = {
-              name: name.trim(),
-              apiId,
-              views: views.trim(),
-              likes: likes.trim(),
-              shares: shares.trim(),
-              saves: saves.trim(),
-            };
+  name: name.trim(),
+  apiId,
+  views: views.trim(),
+  likes: likes.trim(),
+  shares: shares.trim(),
+  saves: saves.trim(),
+  comments: comments.trim(),
+};
             if (editingBundleId) {
               onUpdateBundle(editingBundleId, payload);
             } else {
@@ -262,6 +269,7 @@ export function BundleManager({ apis, bundles, onAddBundle, onUpdateBundle, onDe
                 setLikes("");
                 setShares("");
                 setSaves("");
+                setComments("");
               }}
               className="w-full rounded-xl border border-yellow-500/30 bg-black px-3 py-2.5 text-sm text-gray-100"
             >
@@ -312,6 +320,13 @@ export function BundleManager({ apis, bundles, onAddBundle, onUpdateBundle, onDe
                 placeholder="Select Saves Service"
                 label="💾 Saves Service"
               />
+              <SearchableSelect
+  options={commentOptions}
+  value={comments}
+  onChange={setComments}
+  placeholder="Select Comments Service"
+  label="💬 Comments Service"
+/>
             </>
           )}
 
@@ -369,6 +384,10 @@ export function BundleManager({ apis, bundles, onAddBundle, onUpdateBundle, onDe
                 <p className="text-xs text-gray-600">💾 Saves</p>
                 <p className="mt-0.5 text-xs font-mono text-yellow-400">{bundle.serviceIds.saves}</p>
               </div>
+              <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-3 py-2">
+  <p className="text-xs text-gray-600">💬 Comments</p>
+  <p className="mt-0.5 text-xs font-mono text-yellow-400">{bundle.serviceIds.comments}</p>
+</div>
             </div>
 
             <div className="mt-3 flex items-center gap-2">
@@ -382,6 +401,7 @@ export function BundleManager({ apis, bundles, onAddBundle, onUpdateBundle, onDe
                   setLikes(bundle.serviceIds.likes);
                   setShares(bundle.serviceIds.shares);
                   setSaves(bundle.serviceIds.saves);
+                  setComments(bundle.serviceIds.comments || "");
                   setShowForm(true);
                 }}
                 className="rounded-md border border-yellow-500/30 bg-yellow-500/10 px-2.5 py-1.5 text-xs text-yellow-300 transition hover:bg-yellow-500/20"
