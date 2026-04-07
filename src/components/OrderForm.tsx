@@ -14,6 +14,7 @@ interface OrderFormProps {
   includeLikes: boolean;
   includeShares: boolean;
   includeSaves: boolean;
+  includeComments: boolean;
   peakHoursBoost: boolean;
   delivery: DeliveryOption;
   customHours: number;
@@ -28,6 +29,7 @@ interface OrderFormProps {
   onToggleLikes: (value: boolean) => void;
   onToggleShares: (value: boolean) => void;
   onToggleSaves: (value: boolean) => void;
+  onToggleComments: (value: boolean) => void;
   onPeakHoursChange: (value: boolean) => void;
   onDeliveryChange: (option: DeliveryOption) => void;
   onCustomHoursChange: (hours: number) => void;
@@ -155,11 +157,12 @@ export function OrderForm(props: OrderFormProps) {
             />
             <p className="text-xs text-gray-600">Hours until mission deployment</p>
           </div>
-          <div className="grid gap-3 md:grid-cols-3">
-            <Toggle checked={props.includeLikes} label="Likes" onChange={props.onToggleLikes} />
-            <Toggle checked={props.includeShares} label="Shares" onChange={props.onToggleShares} />
-            <Toggle checked={props.includeSaves} label="Saves" onChange={props.onToggleSaves} />
-          </div>
+          <div className="grid gap-3 md:grid-cols-4">
+  <Toggle checked={props.includeLikes} label="Likes" onChange={props.onToggleLikes} />
+  <Toggle checked={props.includeShares} label="Shares" onChange={props.onToggleShares} />
+  <Toggle checked={props.includeSaves} label="Saves" onChange={props.onToggleSaves} />
+  <Toggle checked={props.includeComments} label="Comments" onChange={props.onToggleComments} />
+</div>
         </div>
       </div>
 
