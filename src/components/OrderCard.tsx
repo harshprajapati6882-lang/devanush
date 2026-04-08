@@ -81,47 +81,43 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
     return order.status;
   }, [order, nowMs]);
 
-  const graphData = useMemo(() => {
-  const runs = Array.isArray(order?.runs) ? order.runs : [];
+  const mergedData = useMemo(() => {
+  const runs = order.runs || [];
 
   let v = 0, l = 0, sh = 0, sa = 0, c = 0;
 
-  return runs.map((run, index) => {
-    if (!run) return null;
+  return runs.map((run) => {
+    const runTime = new Date(run.at).getTime();
 
-    const runTime = run?.at ? new Date(run.at).getTime() : 0;
+    // planned values
+    const planned = {
+      views: run.cumulativeViews || 0,
+      likes: run.cumulativeLikes || 0,
+      comments: run.cumulativeComments || 0,
+    };
 
+    // live accumulation
     if (runTime <= nowMs) {
-      v += Number(run?.views || 0);
-      l += Number(run?.likes || 0);
-      sh += Number(run?.shares || 0);
-      sa += Number(run?.saves || 0);
-      c += Number(run?.comments || 0);
+      v += run.views || 0;
+      l += run.likes || 0;
+      c += run.comments || 0;
     }
 
     return {
-  time: run.at,
-  views: v,
-  likes: l,
-  shares: sh,
-  saves: sa,
-  comments: c,
-};
-  }).filter(Boolean);
-}, [order?.runs, nowMs]);
+      time: run.at,
 
-  const plannedData = useMemo(() => {
-  const runs = order.runs || [];
+      // 👉 planned
+      plannedViews: planned.views,
+      plannedLikes: planned.likes,
+      plannedComments: planned.comments,
 
-  return runs.map((run, index) => ({
-    time: run.at,
-    views: run.cumulativeViews || 0,
-    likes: (run.cumulativeLikes || 0) * 10,
-shares: (run.cumulativeShares || 0) * 10,
-saves: (run.cumulativeSaves || 0) * 10,
-comments: (run.cumulativeComments || 0) * 10,
-  }));
-}, [order.runs]);
+      // 👉 live
+      views: v,
+      likes: l,
+      comments: c,
+    };
+  });
+}, [order.runs, nowMs]);
   
   const shortLink =
     order.link.length > 56 ? `${order.link.slice(0, 36)}...${order.link.slice(-14)}` : order.link;
@@ -183,7 +179,7 @@ comments: (run.cumulativeComments || 0) * 10,
         </p>
         <div className="mt-4 h-48 w-full">
   <ResponsiveContainer width="100%" height="100%">
-    <LineChart data={plannedData}>
+    <LineChart data={mergedData}>
       <defs>
   <linearGradient id="colorViews" x1="0" y1="0" x2="1" y2="0">
     <stop offset={`${progressPercent}%`} stopColor="#3b82f6" />
@@ -203,8 +199,8 @@ comments: (run.cumulativeComments || 0) * 10,
 
       <Tooltip
   formatter={(value, name) => {
-    if (name?.startsWith("planned")) return null; // ❌ hide planned
-    return [value, name];
+    if (name.startsWith("planned")) return null;
+    return [value, name.charAt(0).toUpperCase() + name.slice(1)];
   }}
 />
 
