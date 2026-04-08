@@ -100,13 +100,13 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
     }
 
     return {
-      run: index + 1,
-      views: v,
-      likes: l,
-      shares: sh,
-      saves: sa,
-      comments: c,
-    };
+  time: run.at,
+  views: v,
+  likes: l,
+  shares: sh,
+  saves: sa,
+  comments: c,
+};
   }).filter(Boolean);
 }, [order?.runs, nowMs]);
   
@@ -172,16 +172,23 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
   <ResponsiveContainer width="100%" height="100%">
     <LineChart data={graphData}>
       <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-      <XAxis dataKey="run" stroke="#666" />
+      <XAxis
+  dataKey="time"
+  stroke="#666"
+  tickFormatter={(time) => {
+    const d = new Date(time);
+    return d.getHours() + ":" + String(d.getMinutes()).padStart(2, "0");
+  }}
+/>
       <YAxis stroke="#666" />
 
       <Tooltip />
 
-      <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} />
-      <Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} />
-      <Line type="monotone" dataKey="shares" stroke="#22c55e" strokeWidth={2} />
-      <Line type="monotone" dataKey="saves" stroke="#eab308" strokeWidth={2} />
-      <Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} />
+      <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} dot={false} />
+      <Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} dot={false} />
+      <Line type="monotone" dataKey="shares" stroke="#22c55e" strokeWidth={2} dot={false} />
+      <Line type="monotone" dataKey="saves" stroke="#eab308" strokeWidth={2} dot={false} />
+      <Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} dot={false} />
     </LineChart>
   </ResponsiveContainer>
 </div>
