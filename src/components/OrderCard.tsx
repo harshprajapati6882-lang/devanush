@@ -82,27 +82,46 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
   }, [order, nowMs]);
 
   const graphData = useMemo(() => {
-  const runs = order.runs || [];
+  const runs = Array.isArray(order?.runs) ? order.runs : [];
 
-  let v = 0, l = 0, c = 0;
+  let v = 0, l = 0, sh = 0, sa = 0, c = 0;
 
-  return runs.map((run) => {
-    const runTime = new Date(run.at).getTime();
+  return runs.map((run, index) => {
+    if (!run) return null;
+
+    const runTime = run?.at ? new Date(run.at).getTime() : 0;
 
     if (runTime <= nowMs) {
-      v += run.views || 0;
-      l += run.likes || 0;
-      c += run.comments || 0;
+      v += Number(run?.views || 0);
+      l += Number(run?.likes || 0);
+      sh += Number(run?.shares || 0);
+      sa += Number(run?.saves || 0);
+      c += Number(run?.comments || 0);
     }
 
     return {
-      time: run.at,
-      views: v,
-      likes: l,
-      comments: c,
-    };
-  });
-}, [order.runs, nowMs]);
+  time: run.at,
+  views: v,
+  likes: l,
+  shares: sh,
+  saves: sa,
+  comments: c,
+};
+  }).filter(Boolean);
+}, [order?.runs, nowMs]);
+
+  const plannedData = useMemo(() => {
+  const runs = order.runs || [];
+
+  return runs.map((run, index) => ({
+    time: run.at,
+    views: run.cumulativeViews || 0,
+    likes: (run.cumulativeLikes || 0) * 10,
+shares: (run.cumulativeShares || 0) * 10,
+saves: (run.cumulativeSaves || 0) * 10,
+comments: (run.cumulativeComments || 0) * 10,
+  }));
+}, [order.runs]);
   
   const shortLink =
     order.link.length > 56 ? `${order.link.slice(0, 36)}...${order.link.slice(-14)}` : order.link;
@@ -164,7 +183,7 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
         </p>
         <div className="mt-4 h-48 w-full">
   <ResponsiveContainer width="100%" height="100%">
-    <LineChart data={graphData}>
+    <LineChart data={plannedData}>
       <CartesianGrid strokeDasharray="3 3" stroke="#111" opacity={0.3} />
       <XAxis
   dataKey="time"
@@ -178,14 +197,20 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
 
       <Tooltip
   formatter={(value, name) => {
-    if (name.startsWith("planned")) return null;
-    return [value, name.charAt(0).toUpperCase() + name.slice(1)];
+    if (name?.startsWith("planned")) return null; // ❌ hide planned
+    return [value, name];
   }}
 />
 
-      <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={3} dot={false} />
-  <Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} dot={false} />
-  <Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} dot={false} />
+      {/* Planned (faded lines) */}
+<Line type="monotone" dataKey="views" stroke="#3b82f6" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-views" />
+<Line type="monotone" dataKey="likes" stroke="#ec4899" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-likes" />
+<Line type="monotone" dataKey="shares" stroke="#22c55e" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-shares" />
+<Line type="monotone" dataKey="saves" stroke="#eab308" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-saves" />
+<Line type="monotone" dataKey="comments" stroke="#a855f7" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-comments" />
+      <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} dot={false} />
+      <Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} dot={false} />
+      <Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} dot={false} />
     </LineChart>
   </ResponsiveContainer>
 </div>
