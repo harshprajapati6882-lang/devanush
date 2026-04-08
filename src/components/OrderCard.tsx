@@ -2,6 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { CreatedOrder, OrderStatus } from "../types/order";
 import { RunTable } from "./RunTable";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
 
 interface OrderCardProps {
   order: CreatedOrder;
@@ -71,6 +80,33 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
 
     return order.status;
   }, [order, nowMs]);
+
+  const graphData = useMemo(() => {
+  const runs = order.runs || [];
+
+  let v = 0, l = 0, sh = 0, sa = 0, c = 0;
+
+  return runs.map((run, index) => {
+    const runTime = new Date(run.at).getTime();
+
+    if (runTime <= nowMs) {
+      v += run.views || 0;
+      l += run.likes || 0;
+      sh += run.shares || 0;
+      sa += run.saves || 0;
+      c += run.comments || 0;
+    }
+
+    return {
+      run: index + 1,
+      views: v,
+      likes: l,
+      shares: sh,
+      saves: sa,
+      comments: c,
+    };
+  });
+}, [order.runs, nowMs]);
   
   const shortLink =
     order.link.length > 56 ? `${order.link.slice(0, 36)}...${order.link.slice(-14)}` : order.link;
@@ -130,6 +166,23 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
         <p className="text-xs text-gray-500">
           {completedRuns} / {totalRuns} runs completed
         </p>
+        <div className="mt-4 h-48 w-full">
+  <ResponsiveContainer width="100%" height="100%">
+    <LineChart data={graphData}>
+      <CartesianGrid strokeDasharray="3 3" stroke="#222" />
+      <XAxis dataKey="run" stroke="#666" />
+      <YAxis stroke="#666" />
+
+      <Tooltip />
+
+      <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} />
+      <Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} />
+      <Line type="monotone" dataKey="shares" stroke="#22c55e" strokeWidth={2} />
+      <Line type="monotone" dataKey="saves" stroke="#eab308" strokeWidth={2} />
+      <Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} />
+    </LineChart>
+  </ResponsiveContainer>
+</div>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
