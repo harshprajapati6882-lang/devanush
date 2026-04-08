@@ -135,19 +135,20 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
       minViewsPerRun, // 🔥 NEW: Pass to pattern generator
     }),
     [
-      postUrl,
-      totalViews,
-      startDelayHours,
-      includeLikes,
-      includeShares,
-      includeSaves,
-      variancePercent,
-      peakHoursBoost,
-      quickPreset,
-      delivery,
-      customHours,
-      minViewsPerRun, // 🔥 NEW: Dependency
-    ]
+  postUrl,
+  totalViews,
+  startDelayHours,
+  includeLikes,
+  includeShares,
+  includeSaves,
+  includeComments, // ✅ ADD THIS
+  variancePercent,
+  peakHoursBoost,
+  quickPreset,
+  delivery,
+  customHours,
+  minViewsPerRun,
+]
   );
 
   const generatedPlan = useMemo(() => {
@@ -836,6 +837,10 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
             const totalLikes = (safePlan?.runs || []).reduce((acc, run) => acc + run.likes, 0);
             const totalShares = (safePlan?.runs || []).reduce((acc, run) => acc + run.shares, 0);
             const totalSaves = (safePlan?.runs || []).reduce((acc, run) => acc + run.saves, 0);
+            const totalCommentsQty = (safePlan?.runs || []).reduce(
+  (acc, run) => acc + (run.comments || 0),
+  0
+);
 
             if (includeLikes && totalLikes < 10) {
               setCreateError("Likes must be at least 10.");
