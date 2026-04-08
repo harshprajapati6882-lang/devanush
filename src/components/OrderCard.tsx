@@ -82,19 +82,21 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
   }, [order, nowMs]);
 
   const graphData = useMemo(() => {
-  const runs = order.runs || [];
+  const runs = Array.isArray(order?.runs) ? order.runs : [];
 
   let v = 0, l = 0, sh = 0, sa = 0, c = 0;
 
   return runs.map((run, index) => {
-    const runTime = new Date(run.at).getTime();
+    if (!run) return null;
+
+    const runTime = run?.at ? new Date(run.at).getTime() : 0;
 
     if (runTime <= nowMs) {
-      v += run.views || 0;
-      l += run.likes || 0;
-      sh += run.shares || 0;
-      sa += run.saves || 0;
-      c += run.comments || 0;
+      v += Number(run?.views || 0);
+      l += Number(run?.likes || 0);
+      sh += Number(run?.shares || 0);
+      sa += Number(run?.saves || 0);
+      c += Number(run?.comments || 0);
     }
 
     return {
@@ -105,8 +107,8 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
       saves: sa,
       comments: c,
     };
-  });
-}, [order.runs, nowMs]);
+  }).filter(Boolean);
+}, [order?.runs, nowMs]);
   
   const shortLink =
     order.link.length > 56 ? `${order.link.slice(0, 36)}...${order.link.slice(-14)}` : order.link;
