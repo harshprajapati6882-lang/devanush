@@ -68,19 +68,23 @@ function readStorage<T>(key: string, fallback: T): T {
 function hydrateOrderDates(orders: CreatedOrder[]): CreatedOrder[] {
   return (orders || []).map((order) => {
     const safeRuns = Array.isArray(order?.runs)
-      ? order.runs.map((run, index) => ({
-          run: Number.isFinite(run?.run) ? run.run : index + 1,
-          at: run?.at ? new Date(run.at) : new Date(),
-          minutesFromStart: Number.isFinite(run?.minutesFromStart) ? run.minutesFromStart : 0,
-          views: Number.isFinite(run?.views) ? run.views : 0,
-          likes: Number.isFinite(run?.likes) ? run.likes : 0,
-          shares: Number.isFinite(run?.shares) ? run.shares : 0,
-          saves: Number.isFinite(run?.saves) ? run.saves : 0,
-          cumulativeViews: Number.isFinite(run?.cumulativeViews) ? run.cumulativeViews : 0,
-          cumulativeLikes: Number.isFinite(run?.cumulativeLikes) ? run.cumulativeLikes : 0,
-          cumulativeShares: Number.isFinite(run?.cumulativeShares) ? run.cumulativeShares : 0,
-          cumulativeSaves: Number.isFinite(run?.cumulativeSaves) ? run.cumulativeSaves : 0,
-        }))
+  ? order.runs.map((run, index) => ({
+      run: Number.isFinite(run?.run) ? run.run : index + 1,
+      at: run?.at ? new Date(run.at) : new Date(),
+      minutesFromStart: Number.isFinite(run?.minutesFromStart) ? run.minutesFromStart : 0,
+
+      views: Number.isFinite(run?.views) ? run.views : 0,
+      likes: Number.isFinite(run?.likes) ? run.likes : 0,
+      shares: Number.isFinite(run?.shares) ? run.shares : 0,
+      saves: Number.isFinite(run?.saves) ? run.saves : 0,
+      comments: Number.isFinite(run?.comments) ? run.comments : 0, // ✅ ADD
+
+      cumulativeViews: Number.isFinite(run?.cumulativeViews) ? run.cumulativeViews : 0,
+      cumulativeLikes: Number.isFinite(run?.cumulativeLikes) ? run.cumulativeLikes : 0,
+      cumulativeShares: Number.isFinite(run?.cumulativeShares) ? run.cumulativeShares : 0,
+      cumulativeSaves: Number.isFinite(run?.cumulativeSaves) ? run.cumulativeSaves : 0,
+      cumulativeComments: Number.isFinite(run?.cumulativeComments) ? run.cumulativeComments : 0, // ✅ ADD
+    }))
       : [];
 
     const safeRunStatuses: RunStatus[] = Array.isArray(order?.runStatuses)
