@@ -112,15 +112,14 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
 
   const plannedData = useMemo(() => {
   const runs = order.runs || [];
-  const total = runs.length - 1; // ✅ OUTSIDE
 
   return runs.map((run, index) => ({
-    x: total > 0 ? (index / total) * 100 : 0,
+    time: run.at,
     views: run.cumulativeViews || 0,
-    likes: run.cumulativeLikes || 0,
-    shares: run.cumulativeShares || 0,
-    saves: run.cumulativeSaves || 0,
-    comments: run.cumulativeComments || 0,
+    likes: (run.cumulativeLikes || 0) * 10,
+shares: (run.cumulativeShares || 0) * 10,
+saves: (run.cumulativeSaves || 0) * 10,
+comments: (run.cumulativeComments || 0) * 10,
   }));
 }, [order.runs]);
   
@@ -187,9 +186,12 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
     <LineChart data={plannedData}>
       <CartesianGrid strokeDasharray="3 3" stroke="#111" opacity={0.3} />
       <XAxis
-  dataKey="x"
+  dataKey="time"
   stroke="#666"
-  tickFormatter={(val) => `${Math.round(val)}%`}
+  tickFormatter={(time) => {
+    const d = new Date(time);
+    return d.getHours() + ":" + String(d.getMinutes()).padStart(2, "0");
+  }}
 />
       <YAxis stroke="#666" />
 
