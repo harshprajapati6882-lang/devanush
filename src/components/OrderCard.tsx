@@ -116,10 +116,10 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
   return runs.map((run, index) => ({
     time: run.at,
     views: run.cumulativeViews || 0,
-    likes: run.cumulativeLikes || 0,
-    shares: run.cumulativeShares || 0,
-    saves: run.cumulativeSaves || 0,
-    comments: run.cumulativeComments || 0,
+    likes: (run.cumulativeLikes || 0) * 10,
+shares: (run.cumulativeShares || 0) * 10,
+saves: (run.cumulativeSaves || 0) * 10,
+comments: (run.cumulativeComments || 0) * 10,
   }));
 }, [order.runs]);
   
@@ -184,7 +184,7 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
         <div className="mt-4 h-48 w-full">
   <ResponsiveContainer width="100%" height="100%">
     <LineChart data={plannedData}>
-      <CartesianGrid strokeDasharray="3 3" stroke="#222" />
+      <CartesianGrid strokeDasharray="3 3" stroke="#111" opacity={0.3} />
       <XAxis
   dataKey="time"
   stroke="#666"
@@ -198,15 +198,13 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
       <Tooltip />
 
       {/* Planned (faded lines) */}
-<Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} opacity={0.2} dot={false} strokeDasharray="5 5" />
-<Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} opacity={0.2} dot={false} strokeDasharray="5 5" />
-<Line type="monotone" dataKey="shares" stroke="#22c55e" strokeWidth={2} opacity={0.2} dot={false} strokeDasharray="5 5" />
-<Line type="monotone" dataKey="saves" stroke="#eab308" strokeWidth={2} opacity={0.2} dot={false} strokeDasharray="5 5" />
-<Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} opacity={0.2} dot={false} strokeDasharray="5 5" />
+<Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} opacity={0.1} dot={false} strokeDasharray="5 5" />
+<Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} opacity={0.1} dot={false} strokeDasharray="5 5" />
+<Line type="monotone" dataKey="shares" stroke="#22c55e" strokeWidth={2} opacity={0.1} dot={false} strokeDasharray="5 5" />
+<Line type="monotone" dataKey="saves" stroke="#eab308" strokeWidth={2} opacity={0.1} dot={false} strokeDasharray="5 5" />
+<Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} opacity={0.1} dot={false} strokeDasharray="5 5" />
       <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} dot={false} />
       <Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} dot={false} />
-      <Line type="monotone" dataKey="shares" stroke="#22c55e" strokeWidth={2} dot={false} />
-      <Line type="monotone" dataKey="saves" stroke="#eab308" strokeWidth={2} dot={false} />
       <Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} dot={false} />
     </LineChart>
   </ResponsiveContainer>
