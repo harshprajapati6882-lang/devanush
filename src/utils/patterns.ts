@@ -1339,7 +1339,7 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   const likesRatio = random(0.05, 0.07);
   const sharesRatio = random(0.01, 0.02);
   const savesRatio = random(0.005, 0.01);
-  const commentsRatio = random(0.001, 0.002); // 0.1%–0.2%
+  const commentsRatio = random(0.0002, 0.0003); // 0.02%–0.03%
 
   const likesTotal = config.includeLikes ? Math.max(10, Math.floor(totalViews * likesRatio)) : 0;
   const sharesTotal = config.includeShares ? Math.max(20, Math.floor(totalViews * sharesRatio)) : 0;
