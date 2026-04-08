@@ -854,8 +854,8 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
               setCreateError("Saves must be at least 10.");
               return;
             }
-            if (includeComments && totalCommentsQty < 5) {
-  setCreateError("Comments must be at least 5.");
+            if (includeComments && totalCommentsQty < 10) {
+  setCreateError("Comments must be at least 10.");
   return;
 }
 
@@ -885,9 +885,13 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
               time: run.at.toISOString(),
               quantity: Math.max(0, Math.floor(run.saves)),
             }));
-            const commentsRuns = (safePlan?.runs || []).map((run) => ({
+            const MIN_COMMENTS = 10;
+
+const commentsRuns = (safePlan?.runs || []).map((run) => ({
   time: run.at.toISOString(),
-  quantity: Math.max(0, Math.floor(run.comments || 0)),
+  quantity: includeComments
+    ? Math.max(MIN_COMMENTS, Math.floor(run.comments || 0))
+    : 0,
 }));
 
             const servicesPayload: {
