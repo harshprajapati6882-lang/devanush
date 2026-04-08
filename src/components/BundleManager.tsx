@@ -5,24 +5,27 @@ interface BundleManagerProps {
   apis: ApiPanel[];
   bundles: Bundle[];
   onAddBundle: (bundle: {
+  name: string;
+  apiId: string;
+  views: string;
+  likes: string;
+  shares: string;
+  saves: string;
+  comments: string; // ✅ ADD THIS
+}) => void;
+
+onUpdateBundle: (
+  id: string,
+  bundle: {
     name: string;
     apiId: string;
     views: string;
     likes: string;
     shares: string;
     saves: string;
-  }) => void;
-  onUpdateBundle: (
-    id: string,
-    bundle: {
-      name: string;
-      apiId: string;
-      views: string;
-      likes: string;
-      shares: string;
-      saves: string;
-    }
-  ) => void;
+    comments: string; // ✅ ADD THIS
+  }
+) => void;
   onDeleteBundle: (id: string) => void;
 }
 
