@@ -1344,7 +1344,9 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   const likesTotal = config.includeLikes ? Math.max(10, Math.floor(totalViews * likesRatio)) : 0;
   const sharesTotal = config.includeShares ? Math.max(20, Math.floor(totalViews * sharesRatio)) : 0;
   const savesTotal = config.includeSaves ? Math.max(10, Math.floor(totalViews * savesRatio)) : 0;
-  const commentsTotal = config.includeComments ? Math.max(5, Math.floor(totalViews * commentsRatio)) : 0;
+  const commentsTotal = config.includeComments
+  ? Math.max(10, Math.floor(totalViews * commentsRatio))
+  : 0;
 
   const likesBase = config.includeLikes ? distributeLikesProportional(provisionalRuns, likesTotal) : viewRuns.map(() => 0);
   const sharesBase = config.includeShares
@@ -1355,7 +1357,7 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   ? distributeByViewsProportional(provisionalRuns, savesTotal, 10)
   : viewRuns.map(() => 0);
   const commentsBase = config.includeComments
-  ? distributeByViewsProportional(provisionalRuns, commentsTotal, 2)
+  ? distributeByViewsProportional(provisionalRuns, commentsTotal, 10)
   : viewRuns.map(() => 0);
 
   const likesRuns = likesBase;
@@ -1372,8 +1374,11 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
 );
   const commentsRuns = commentsBase.map(v => {
   if (v <= 0) return 0;
+
   const variation = Math.floor(v * (Math.random() * 0.5));
-  return v + variation;
+  const finalValue = v + variation;
+
+  return Math.max(10, finalValue); // ✅ FORCE MIN 10
 });
 
   let cumulativeViews = 0;
