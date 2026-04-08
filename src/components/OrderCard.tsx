@@ -112,23 +112,15 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
 
   const plannedData = useMemo(() => {
   const runs = order.runs || [];
+  const total = runs.length - 1; // ✅ OUTSIDE
 
   return runs.map((run, index) => ({
-    const total = runs.length - 1;
-
-return runs.map((run, index) => ({
-  x: total > 0 ? (index / total) * 100 : 0, // 🔥 evenly spaced
-  views: run.cumulativeViews || 0,
-  likes: run.cumulativeLikes || 0,
-  shares: run.cumulativeShares || 0,
-  saves: run.cumulativeSaves || 0,
-  comments: run.cumulativeComments || 0,
-}));
+    x: total > 0 ? (index / total) * 100 : 0,
     views: run.cumulativeViews || 0,
-    likes: (run.cumulativeLikes || 0) * 10,
-shares: (run.cumulativeShares || 0) * 10,
-saves: (run.cumulativeSaves || 0) * 10,
-comments: (run.cumulativeComments || 0) * 10,
+    likes: run.cumulativeLikes || 0,
+    shares: run.cumulativeShares || 0,
+    saves: run.cumulativeSaves || 0,
+    comments: run.cumulativeComments || 0,
   }));
 }, [order.runs]);
   
