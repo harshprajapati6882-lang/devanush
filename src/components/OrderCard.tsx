@@ -100,16 +100,7 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
     }
 
     return {
-  const total = runs.length - 1;
-
-return runs.map((run, index) => ({
-  x: total > 0 ? (index / total) * 100 : 0, // 🔥 evenly spaced
-  views: run.cumulativeViews || 0,
-  likes: run.cumulativeLikes || 0,
-  shares: run.cumulativeShares || 0,
-  saves: run.cumulativeSaves || 0,
-  comments: run.cumulativeComments || 0,
-}));
+  time: run.at,
   views: v,
   likes: l,
   shares: sh,
@@ -123,7 +114,16 @@ return runs.map((run, index) => ({
   const runs = order.runs || [];
 
   return runs.map((run, index) => ({
-    time: run.at,
+    const total = runs.length - 1;
+
+return runs.map((run, index) => ({
+  x: total > 0 ? (index / total) * 100 : 0, // 🔥 evenly spaced
+  views: run.cumulativeViews || 0,
+  likes: run.cumulativeLikes || 0,
+  shares: run.cumulativeShares || 0,
+  saves: run.cumulativeSaves || 0,
+  comments: run.cumulativeComments || 0,
+}));
     views: run.cumulativeViews || 0,
     likes: (run.cumulativeLikes || 0) * 10,
 shares: (run.cumulativeShares || 0) * 10,
