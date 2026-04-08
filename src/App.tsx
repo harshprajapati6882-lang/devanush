@@ -490,11 +490,12 @@ export default function App() {
               apiId: bundle.apiId,
               name: bundle.name,
               serviceIds: {
-                views: bundle.views,
-                likes: bundle.likes,
-                shares: bundle.shares,
-                saves: bundle.saves,
-              },
+  views: bundle.views,
+  likes: bundle.likes,
+  shares: bundle.shares,
+  saves: bundle.saves,
+  comments: bundle.comments, // ✅ ADD THIS
+},
             },
           ];
           persistBundles(next);
@@ -507,11 +508,12 @@ export default function App() {
                   apiId: bundle.apiId,
                   name: bundle.name,
                   serviceIds: {
-                    views: bundle.views,
-                    likes: bundle.likes,
-                    shares: bundle.shares,
-                    saves: bundle.saves,
-                  },
+  views: bundle.views,
+  likes: bundle.likes,
+  shares: bundle.shares,
+  saves: bundle.saves,
+  comments: bundle.comments, // ✅ ADD THIS
+},
                 }
               : item
           );
