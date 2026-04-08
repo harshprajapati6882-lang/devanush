@@ -100,7 +100,16 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
     }
 
     return {
-  time: run.at,
+  const total = runs.length - 1;
+
+return runs.map((run, index) => ({
+  x: total > 0 ? (index / total) * 100 : 0, // 🔥 evenly spaced
+  views: run.cumulativeViews || 0,
+  likes: run.cumulativeLikes || 0,
+  shares: run.cumulativeShares || 0,
+  saves: run.cumulativeSaves || 0,
+  comments: run.cumulativeComments || 0,
+}));
   views: v,
   likes: l,
   shares: sh,
@@ -186,12 +195,9 @@ comments: (run.cumulativeComments || 0) * 10,
     <LineChart data={plannedData}>
       <CartesianGrid strokeDasharray="3 3" stroke="#111" opacity={0.3} />
       <XAxis
-  dataKey="time"
+  dataKey="x"
   stroke="#666"
-  tickFormatter={(time) => {
-    const d = new Date(time);
-    return d.getHours() + ":" + String(d.getMinutes()).padStart(2, "0");
-  }}
+  tickFormatter={(val) => `${Math.round(val)}%`}
 />
       <YAxis stroke="#666" />
 
