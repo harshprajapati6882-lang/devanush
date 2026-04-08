@@ -86,10 +86,20 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
 
   let v = 0, l = 0, sh = 0, sa = 0, c = 0;
 
-  return runs.map((run, index) => {
-    if (!run) return null;
+  const data = [];
 
-    const runTime = run?.at ? new Date(run.at).getTime() : 0;
+  // ✅ ADD START POINT (IMPORTANT)
+  data.push({
+    time: order.createdAt,
+    views: 0,
+    likes: 0,
+    shares: 0,
+    saves: 0,
+    comments: 0,
+  });
+
+  runs.forEach((run) => {
+    const runTime = new Date(run.at).getTime();
 
     if (runTime <= nowMs) {
       v += Number(run?.views || 0);
@@ -99,29 +109,47 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
       c += Number(run?.comments || 0);
     }
 
-    return {
-  time: run.at,
-  views: v,
-  likes: l,
-  shares: sh,
-  saves: sa,
-  comments: c,
-};
-  }).filter(Boolean);
-}, [order?.runs, nowMs]);
+    data.push({
+      time: run.at,
+      views: v,
+      likes: l,
+      shares: sh,
+      saves: sa,
+      comments: c,
+    });
+  });
+
+  return data;
+}, [order?.runs, order.createdAt, nowMs]);
 
   const plannedData = useMemo(() => {
   const runs = order.runs || [];
 
-  return runs.map((run, index) => ({
-    time: run.at,
-    views: run.cumulativeViews || 0,
-    likes: (run.cumulativeLikes || 0) * 10,
-shares: (run.cumulativeShares || 0) * 10,
-saves: (run.cumulativeSaves || 0) * 10,
-comments: (run.cumulativeComments || 0) * 10,
-  }));
-}, [order.runs]);
+  const data = [];
+
+  // ✅ START FROM CREATION
+  data.push({
+    time: order.createdAt,
+    views: 0,
+    likes: 0,
+    shares: 0,
+    saves: 0,
+    comments: 0,
+  });
+
+  runs.forEach((run) => {
+    data.push({
+      time: run.at,
+      views: run.cumulativeViews || 0,
+      likes: run.cumulativeLikes || 0,
+      shares: run.cumulativeShares || 0,
+      saves: run.cumulativeSaves || 0,
+      comments: run.cumulativeComments || 0,
+    });
+  });
+
+  return data;
+}, [order.runs, order.createdAt]);
   
   const shortLink =
     order.link.length > 56 ? `${order.link.slice(0, 36)}...${order.link.slice(-14)}` : order.link;
