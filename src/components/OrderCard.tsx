@@ -195,7 +195,12 @@ comments: (run.cumulativeComments || 0) * 10,
 />
       <YAxis stroke="#666" />
 
-      <Tooltip />
+      <Tooltip
+  formatter={(value, name) => {
+    if (name?.startsWith("planned")) return null; // ❌ hide planned
+    return [value, name];
+  }}
+/>
 
       {/* Planned (faded lines) */}
 <Line type="monotone" dataKey="views" stroke="#3b82f6" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-views" />
