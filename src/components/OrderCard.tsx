@@ -81,22 +81,14 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
     return order.status;
   }, [order, nowMs]);
 
-  const mergedData = useMemo(() => {
+  const graphData = useMemo(() => {
   const runs = order.runs || [];
 
-  let v = 0, l = 0, sh = 0, sa = 0, c = 0;
+  let v = 0, l = 0, c = 0;
 
   return runs.map((run) => {
     const runTime = new Date(run.at).getTime();
 
-    // planned values
-    const planned = {
-      views: run.cumulativeViews || 0,
-      likes: run.cumulativeLikes || 0,
-      comments: run.cumulativeComments || 0,
-    };
-
-    // live accumulation
     if (runTime <= nowMs) {
       v += run.views || 0;
       l += run.likes || 0;
@@ -105,13 +97,6 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
 
     return {
       time: run.at,
-
-      // 👉 planned
-      plannedViews: planned.views,
-      plannedLikes: planned.likes,
-      plannedComments: planned.comments,
-
-      // 👉 live
       views: v,
       likes: l,
       comments: c,
@@ -179,13 +164,7 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
         </p>
         <div className="mt-4 h-48 w-full">
   <ResponsiveContainer width="100%" height="100%">
-    <LineChart data={mergedData}>
-      <defs>
-  <linearGradient id="colorViews" x1="0" y1="0" x2="1" y2="0">
-    <stop offset={`${progressPercent}%`} stopColor="#3b82f6" />
-    <stop offset={`${progressPercent}%`} stopColor="#ffffff" stopOpacity={0.2} />
-  </linearGradient>
-</defs>
+    <LineChart data={graphData}>
       <CartesianGrid strokeDasharray="3 3" stroke="#111" opacity={0.3} />
       <XAxis
   dataKey="time"
@@ -204,15 +183,9 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
   }}
 />
 
-      <Line
-  type="monotone"
-  dataKey="views"
-  stroke="url(#colorViews)"
-  strokeWidth={3}
-  dot={false}
-/>
-      <Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} dot={false} />
-      <Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} dot={false} />
+      <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={3} dot={false} />
+  <Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} dot={false} />
+  <Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} dot={false} />
     </LineChart>
   </ResponsiveContainer>
 </div>
