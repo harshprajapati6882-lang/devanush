@@ -184,6 +184,12 @@ comments: (run.cumulativeComments || 0) * 10,
         <div className="mt-4 h-48 w-full">
   <ResponsiveContainer width="100%" height="100%">
     <LineChart data={plannedData}>
+      <defs>
+  <linearGradient id="colorViews" x1="0" y1="0" x2="1" y2="0">
+    <stop offset={`${progressPercent}%`} stopColor="#3b82f6" />
+    <stop offset={`${progressPercent}%`} stopColor="#ffffff" stopOpacity={0.2} />
+  </linearGradient>
+</defs>
       <CartesianGrid strokeDasharray="3 3" stroke="#111" opacity={0.3} />
       <XAxis
   dataKey="time"
@@ -202,13 +208,13 @@ comments: (run.cumulativeComments || 0) * 10,
   }}
 />
 
-      {/* Planned (faded lines) */}
-<Line type="monotone" dataKey="views" stroke="#3b82f6" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-views" />
-<Line type="monotone" dataKey="likes" stroke="#ec4899" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-likes" />
-<Line type="monotone" dataKey="shares" stroke="#22c55e" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-shares" />
-<Line type="monotone" dataKey="saves" stroke="#eab308" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-saves" />
-<Line type="monotone" dataKey="comments" stroke="#a855f7" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-comments" />
-      <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} dot={false} />
+      <Line
+  type="monotone"
+  dataKey="views"
+  stroke="url(#colorViews)"
+  strokeWidth={3}
+  dot={false}
+/>
       <Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} dot={false} />
       <Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} dot={false} />
     </LineChart>
