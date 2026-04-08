@@ -708,26 +708,30 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
                       if (!selectedBundle || !selectedApi) return "0";
                       
                       const viewsService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.views);
-                      const likesService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.likes);
-                      const sharesService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.shares);
-                      const savesService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.saves);
-                      
-                      const totalViewsQty = safePlan.runs.reduce((sum, run) => sum + (run.views || 0), 0);
-                      const totalLikesQty = safePlan.runs.reduce((sum, run) => sum + (run.likes || 0), 0);
-                      const totalSharesQty = safePlan.runs.reduce((sum, run) => sum + (run.shares || 0), 0);
-                      const totalSavesQty = safePlan.runs.reduce((sum, run) => sum + (run.saves || 0), 0);
-                      
-                      const viewsRate = parseFloat(viewsService?.rate || "0");
-                      const likesRate = parseFloat(likesService?.rate || "0");
-                      const sharesRate = parseFloat(sharesService?.rate || "0");
-                      const savesRate = parseFloat(savesService?.rate || "0");
-                      
-                      const viewsPrice = (totalViewsQty / 1000) * viewsRate;
-                      const likesPrice = includeLikes ? (totalLikesQty / 1000) * likesRate : 0;
-                      const sharesPrice = includeShares ? (totalSharesQty / 1000) * sharesRate : 0;
-                      const savesPrice = includeSaves ? (totalSavesQty / 1000) * savesRate : 0;
-                      
-                      return (viewsPrice + likesPrice + sharesPrice + savesPrice + commentsPrice).toFixed(0);
+const likesService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.likes);
+const sharesService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.shares);
+const savesService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.saves);
+const commentsService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.comments);
+
+const totalViewsQty = safePlan.runs.reduce((sum, run) => sum + (run.views || 0), 0);
+const totalLikesQty = safePlan.runs.reduce((sum, run) => sum + (run.likes || 0), 0);
+const totalSharesQty = safePlan.runs.reduce((sum, run) => sum + (run.shares || 0), 0);
+const totalSavesQty = safePlan.runs.reduce((sum, run) => sum + (run.saves || 0), 0);
+const totalCommentsQty = safePlan.runs.reduce((sum, run) => sum + (run.comments || 0), 0);
+
+const viewsRate = parseFloat(viewsService?.rate || "0");
+const likesRate = parseFloat(likesService?.rate || "0");
+const sharesRate = parseFloat(sharesService?.rate || "0");
+const savesRate = parseFloat(savesService?.rate || "0");
+const commentsRate = parseFloat(commentsService?.rate || "0");
+
+const viewsPrice = (totalViewsQty / 1000) * viewsRate;
+const likesPrice = includeLikes ? (totalLikesQty / 1000) * likesRate : 0;
+const sharesPrice = includeShares ? (totalSharesQty / 1000) * sharesRate : 0;
+const savesPrice = includeSaves ? (totalSavesQty / 1000) * savesRate : 0;
+const commentsPrice = includeComments ? (totalCommentsQty / 1000) * commentsRate : 0;
+
+return (viewsPrice + likesPrice + sharesPrice + savesPrice + commentsPrice).toFixed(0);
                     })()}
                   </span>
                 </div>
