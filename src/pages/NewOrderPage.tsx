@@ -776,6 +776,7 @@ return (viewsPrice + likesPrice + sharesPrice + savesPrice + commentsPrice).toFi
           type="button"
           disabled={isCreatingOrder}
           onClick={async () => {
+            console.log("CLICKED BUTTON");
             setCreateError("");
             setCreateSuccess("");
             if (!selectedBundleId) {
