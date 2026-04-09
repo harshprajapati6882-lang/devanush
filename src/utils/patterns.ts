@@ -1372,18 +1372,23 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
     return v + variation;
   })
 );
-  const commentsRuns = commentsBase.map(v => {
-  if (v <= 0) return 0;
+  const commentsRuns = (() => {
+  const result = Array.from({ length: commentsBase.length }, () => 0);
 
-  const variation = Math.floor(v * (Math.random() * 0.4 - 0.2)); // -20% to +20%
-let finalValue = v + variation;
+  // 🔥 pick random runs (20–40% of total)
+  const activeCount = Math.max(1, Math.floor(commentsBase.length * (0.2 + Math.random() * 0.2)));
 
-  // 🔥 APPLY LIMITS
-  finalValue = Math.max(5, finalValue);   // min 5
-  finalValue = Math.min(10, finalValue);  // max 10
+  const indexes = Array.from({ length: commentsBase.length }, (_, i) => i)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, activeCount);
 
-  return finalValue;
-});
+  for (const i of indexes) {
+    let value = randomInt(5, 10); // 🔥 ALWAYS between 5–10
+    result[i] = value;
+  }
+
+  return result;
+})();
 
   let cumulativeViews = 0;
   let cumulativeLikes = 0;
