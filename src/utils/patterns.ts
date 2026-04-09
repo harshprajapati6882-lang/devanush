@@ -1376,9 +1376,13 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   if (v <= 0) return 0;
 
   const variation = Math.floor(v * (Math.random() * 0.5));
-  const finalValue = v + variation;
+  let finalValue = v + variation;
 
-  return Math.max(10, finalValue); // ✅ FORCE MIN 10
+  // 🔥 APPLY LIMITS
+  finalValue = Math.max(5, finalValue);   // min 5
+  finalValue = Math.min(10, finalValue);  // max 10
+
+  return finalValue;
 });
 
   let cumulativeViews = 0;
