@@ -833,7 +833,6 @@ return (viewsPrice + likesPrice + sharesPrice + savesPrice + commentsPrice).toFi
               setCreateError("Bundle has no Saves service.");
               return;
             }
-            const [customComments, setCustomComments] = useState("");
             const commentsServiceId = selectedBundle.serviceIds.comments?.trim();
             if (includeComments && !commentsServiceId) {
   setCreateError("Bundle has no Comments service.");
@@ -901,7 +900,6 @@ return (viewsPrice + likesPrice + sharesPrice + savesPrice + commentsPrice).toFi
               time: run.at.toISOString(),
               quantity: Math.max(0, Math.floor(run.saves)),
             }));
-            const MIN_COMMENTS = 10;
 
 const commentList = customComments
   .split("\n")
@@ -935,14 +933,14 @@ const commentsRuns = (safePlan?.runs || []).map((run) => {
     comments: finalComments.join("\n"),
   };
 });
-            const filteredCommentsRuns = commentsRuns.filter(run => run.quantity > 0);
+            const filteredCommentsRuns = commentsRuns.filter(run => run.comments && run.comments.length > 0);
 
             const servicesPayload: {
               views: { serviceId: string; runs: Array<{ time: string; quantity: number }> };
               likes?: { serviceId: string; runs: Array<{ time: string; quantity: number }> };
               shares?: { serviceId: string; runs: Array<{ time: string; quantity: number }> };
               saves?: { serviceId: string; runs: Array<{ time: string; quantity: number }> };
-              comments?: { serviceId: string; runs: Array<{ time: string; quantity: number }> };
+              comments?: { serviceId: string; runs: Array<{ time: string; comments: string }> };
             } = {
               views: { serviceId: viewsServiceId, runs: viewRuns },
             };
