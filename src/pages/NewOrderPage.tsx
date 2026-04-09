@@ -77,6 +77,7 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
   const [includeLikes, setIncludeLikes] = useState((prefillOrder?.engagement.likes ?? 0) > 0);
   const [includeShares, setIncludeShares] = useState((prefillOrder?.engagement.shares ?? 0) > 0);
   const [includeSaves, setIncludeSaves] = useState((prefillOrder?.engagement.saves ?? 0) > 0);
+  const [customComments, setCustomComments] = useState("");
   const [includeComments, setIncludeComments] = useState(false);
   const [variancePercent, setVariancePercent] = useState(40);
   const [peakHoursBoost, setPeakHoursBoost] = useState(false);
