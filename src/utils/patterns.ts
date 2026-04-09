@@ -1347,8 +1347,16 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   let commentsTotal = 0;
 
 if (config.includeComments) {
-  if (totalViews >= 10000) {
-    commentsTotal = randomInt(5, 20);
+  if (totalViews >= 50000) {
+    commentsTotal = randomInt(30, 40);
+  } else if (totalViews >= 40000) {
+    commentsTotal = randomInt(25, 40);
+  } else if (totalViews >= 30000) {
+    commentsTotal = randomInt(20, 35);
+  } else if (totalViews >= 20000) {
+    commentsTotal = randomInt(15, 30);
+  } else if (totalViews >= 10000) {
+    commentsTotal = randomInt(5, 15);
   } else if (totalViews >= 5000) {
     commentsTotal = randomInt(5, 7);
   } else {
