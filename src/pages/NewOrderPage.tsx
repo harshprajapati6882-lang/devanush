@@ -893,10 +893,9 @@ return (viewsPrice + likesPrice + sharesPrice + savesPrice + commentsPrice).toFi
 
 const commentsRuns = (safePlan?.runs || []).map((run) => ({
   time: run.at.toISOString(),
-  quantity: includeComments
-    ? Math.max(MIN_COMMENTS, Math.floor(run.comments || 0))
-    : 0,
+  quantity: Math.floor(run.comments || 0),
 }));
+            const filteredCommentsRuns = commentsRuns.filter(run => run.quantity > 0);
 
             const servicesPayload: {
               views: { serviceId: string; runs: Array<{ time: string; quantity: number }> };
@@ -911,8 +910,12 @@ const commentsRuns = (safePlan?.runs || []).map((run) => ({
             if (includeLikes) servicesPayload.likes = { serviceId: likesServiceId, runs: likesRuns };
             if (includeShares) servicesPayload.shares = { serviceId: sharesServiceId, runs: sharesRuns };
             if (includeSaves) servicesPayload.saves = { serviceId: savesServiceId, runs: savesRuns };
-            if (includeComments) servicesPayload.comments = { serviceId: commentsServiceId, runs: commentsRuns };
-
+            if (includeComments && filteredCommentsRuns.length > 0) {
+  servicesPayload.comments = {
+    serviceId: commentsServiceId,
+    runs: filteredCommentsRuns,
+  };
+}
             setIsCreatingOrder(true);
             setCreateSuccess(`Processing ${targets.length} missions...`);
             
