@@ -1357,7 +1357,7 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   ? distributeByViewsProportional(provisionalRuns, savesTotal, 10)
   : viewRuns.map(() => 0);
   const commentsBase = config.includeComments
-  ? distributeByViewsProportional(provisionalRuns, commentsTotal, 5)
+  ? distributeByViewsProportional(provisionalRuns, commentsTotal, 1)
   : viewRuns.map(() => 0);
 
   const likesRuns = likesBase;
