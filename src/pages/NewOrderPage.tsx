@@ -114,6 +114,13 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
   }, []);
 
   // 🔥 UPDATED: Config now includes minViewsPerRun
+  const selectedApi = apis.find(a => a.id === selectedApiId);
+const selectedBundle = bundles.find(b => b.id === selectedBundleId);
+
+const commentsService = selectedApi?.services.find(
+  s => s.id === selectedBundle?.serviceIds.comments
+);
+  
   const config: OrderConfig = useMemo(
     () => ({
       postUrl,
