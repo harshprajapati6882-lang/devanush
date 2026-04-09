@@ -1344,9 +1344,17 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   const likesTotal = config.includeLikes ? Math.max(10, Math.floor(totalViews * likesRatio)) : 0;
   const sharesTotal = config.includeShares ? Math.max(20, Math.floor(totalViews * sharesRatio)) : 0;
   const savesTotal = config.includeSaves ? Math.max(10, Math.floor(totalViews * savesRatio)) : 0;
-  const commentsTotal = config.includeComments
-  ? Math.max(5, Math.floor(totalViews * random(0.0005, 0.002)))
-  : 0;
+  let commentsTotal = 0;
+
+if (config.includeComments) {
+  if (totalViews >= 10000) {
+    commentsTotal = randomInt(5, 20);
+  } else if (totalViews >= 5000) {
+    commentsTotal = randomInt(5, 7);
+  } else {
+    commentsTotal = 5;
+  }
+}
 
   const likesBase = config.includeLikes ? distributeLikesProportional(provisionalRuns, likesTotal) : viewRuns.map(() => 0);
   const sharesBase = config.includeShares
@@ -1375,16 +1383,33 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   const commentsRuns = (() => {
   const result = Array.from({ length: commentsBase.length }, () => 0);
 
-  // 🔥 pick random runs (20–40% of total)
-  const activeCount = Math.max(1, Math.floor(commentsBase.length * (0.2 + Math.random() * 0.2)));
+  if (commentsTotal === 0) return result;
+
+  // 🔥 decide how many runs will have comments
+  const maxRuns = Math.min(commentsBase.length, Math.ceil(commentsTotal / 5));
+  const activeRuns = randomInt(1, maxRuns);
 
   const indexes = Array.from({ length: commentsBase.length }, (_, i) => i)
     .sort(() => Math.random() - 0.5)
-    .slice(0, activeCount);
+    .slice(0, activeRuns);
 
-  for (const i of indexes) {
-    let value = randomInt(5, 10); // 🔥 ALWAYS between 5–10
-    result[i] = value;
+  let remaining = commentsTotal;
+
+  for (let i = 0; i < indexes.length; i++) {
+    const isLast = i === indexes.length - 1;
+
+    let value;
+
+    if (isLast) {
+      value = remaining;
+    } else {
+      // ensure future runs can still have at least 5
+      const maxAllowed = remaining - (indexes.length - i - 1) * 5;
+      value = Math.min(maxAllowed, randomInt(5, 10));
+    }
+
+    result[indexes[i]] = value;
+    remaining -= value;
   }
 
   return result;
