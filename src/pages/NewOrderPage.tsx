@@ -877,8 +877,8 @@ return (viewsPrice + likesPrice + sharesPrice + savesPrice + commentsPrice).toFi
               setCreateError("Saves must be at least 10.");
               return;
             }
-            if (includeComments && totalCommentsQty < commentsMin) {
-  setCreateError(`Comments must be at least ${commentsMin}.`);
+            if (includeComments && totalCommentsQty <= 0) {
+  setCreateError("Comments must be greater than 0.");
   return;
 }
 
