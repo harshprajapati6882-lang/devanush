@@ -1375,8 +1375,8 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   const commentsRuns = commentsBase.map(v => {
   if (v <= 0) return 0;
 
-  const variation = Math.floor(v * (Math.random() * 0.5));
-  let finalValue = v + variation;
+  const variation = Math.floor(v * (Math.random() * 0.4 - 0.2)); // -20% to +20%
+let finalValue = v + variation;
 
   // 🔥 APPLY LIMITS
   finalValue = Math.max(5, finalValue);   // min 5
