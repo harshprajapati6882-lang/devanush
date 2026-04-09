@@ -255,13 +255,13 @@ const commentsService = selectedApi?.services.find(
       setDelivery({ mode: "preset", label: "48h", hours: 48 });
     }
     setSeed((current) => current + 1);
-    setExpandedRuns(false);
+    setExpandedRuns(true);
   };
 
   const handleGenerate = () => {
     setUseClonedPlan(false);
     setSeed((current) => current + 1);
-    setExpandedRuns(false);
+    setExpandedRuns(true);
   };
 
   // 🔥 NEW: Handle min views change - regenerate pattern when changed
