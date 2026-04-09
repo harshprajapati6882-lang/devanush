@@ -637,7 +637,18 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
               </div>
             </div>
           </div>
-
+<div className="mt-2">
+  <label className="text-[10px] text-gray-500 mb-1 block">
+    💬 Custom Comments (one per line)
+  </label>
+  <textarea
+    value={customComments}
+    onChange={(e) => setCustomComments(e.target.value)}
+    rows={3}
+    placeholder={"Nice post!\n🔥🔥\nAmazing"}
+    className="w-full rounded-lg border border-yellow-500/20 bg-black px-2 py-1.5 text-xs text-white"
+  />
+</div>
           {/* Price Calculator - Compact Horizontal */}
           {selectedBundleId && safePlan.runs.length > 0 && (
             <div className="rounded-lg border border-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-black p-2">
@@ -657,6 +668,7 @@ export function NewOrderPage({ apis, bundles, orders, prefillOrder, onCreateOrde
                     const sharesService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.shares);
                     const savesService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.saves);
                     const commentsService = selectedApi.services.find(s => s.id === selectedBundle.serviceIds.comments);
+                    const commentsMin = Number(commentsService?.min || 0);
                     
                     const totalViewsQty = safePlan.runs.reduce((sum, run) => sum + (run.views || 0), 0);
                     const totalLikesQty = safePlan.runs.reduce((sum, run) => sum + (run.likes || 0), 0);
@@ -821,7 +833,7 @@ return (viewsPrice + likesPrice + sharesPrice + savesPrice + commentsPrice).toFi
               setCreateError("Bundle has no Saves service.");
               return;
             }
-
+            const [customComments, setCustomComments] = useState("");
             const commentsServiceId = selectedBundle.serviceIds.comments?.trim();
             if (includeComments && !commentsServiceId) {
   setCreateError("Bundle has no Comments service.");
@@ -858,8 +870,8 @@ return (viewsPrice + likesPrice + sharesPrice + savesPrice + commentsPrice).toFi
               setCreateError("Saves must be at least 10.");
               return;
             }
-            if (includeComments && totalCommentsQty < 10) {
-  setCreateError("Comments must be at least 10.");
+            if (includeComments && totalCommentsQty < commentsMin) {
+  setCreateError(`Comments must be at least ${commentsMin}.`);
   return;
 }
 
@@ -891,10 +903,38 @@ return (viewsPrice + likesPrice + sharesPrice + savesPrice + commentsPrice).toFi
             }));
             const MIN_COMMENTS = 10;
 
-const commentsRuns = (safePlan?.runs || []).map((run) => ({
-  time: run.at.toISOString(),
-  quantity: Math.floor(run.comments || 0),
-}));
+const commentList = customComments
+  .split("\n")
+  .map(c => c.trim())
+  .filter(Boolean);
+
+const commentsRuns = (safePlan?.runs || []).map((run) => {
+  const required = Math.floor(run.comments || 0);
+
+  if (required <= 0) {
+    return { time: run.at.toISOString(), comments: "" };
+  }
+
+  let finalComments = [];
+
+  if (commentList.length === 0) {
+    finalComments = ["Nice post"];
+  } else if (commentList.length >= required) {
+    finalComments = commentList.slice(0, required);
+  } else {
+    // duplicate
+    while (finalComments.length < required) {
+      finalComments.push(
+        commentList[finalComments.length % commentList.length]
+      );
+    }
+  }
+
+  return {
+    time: run.at.toISOString(),
+    comments: finalComments.join("\n"),
+  };
+});
             const filteredCommentsRuns = commentsRuns.filter(run => run.quantity > 0);
 
             const servicesPayload: {
