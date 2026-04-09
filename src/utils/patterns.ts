@@ -1345,7 +1345,7 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   const sharesTotal = config.includeShares ? Math.max(20, Math.floor(totalViews * sharesRatio)) : 0;
   const savesTotal = config.includeSaves ? Math.max(10, Math.floor(totalViews * savesRatio)) : 0;
   const commentsTotal = config.includeComments
-  ? Math.max(10, Math.floor(totalViews * commentsRatio))
+  ? Math.max(5, Math.floor(totalViews * random(0.0005, 0.002)))
   : 0;
 
   const likesBase = config.includeLikes ? distributeLikesProportional(provisionalRuns, likesTotal) : viewRuns.map(() => 0);
