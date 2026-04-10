@@ -133,13 +133,13 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
   // 🔥 POINT 2: delay end (still 0)
   if (firstRunTime > createdAt) {
     data.push({
-      time: firstRunTime,
-      views: 0,
-      likes: 0,
-      shares: 0,
-      saves: 0,
-      comments: 0,
-    });
+  time: run.at,
+  views: v,
+  likes: l * 10,       // 🔥 restore scaling
+  shares: sh * 10,
+  saves: sa * 10,
+  comments: c * 10,
+});
   }
 
   // 🔥 RUNS START
@@ -237,7 +237,9 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
 
       <Tooltip
   formatter={(value, name) => {
-    if (name?.startsWith("planned")) return null; // ❌ hide planned
+    if (name === "likes") return [Math.round(value / 10), "likes"];
+    if (name === "shares") return [Math.round(value / 10), "shares"];
+    if (name === "comments") return [Math.round(value / 10), "comments"];
     return [value, name];
   }}
 />
