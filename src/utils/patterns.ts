@@ -1341,7 +1341,9 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   const savesRatio = random(0.005, 0.01);
   const commentsRatio = random(0.0002, 0.0003); // 0.02%–0.03%
 
-  const likesTotal = config.includeLikes ? Math.max(10, Math.floor(totalViews * likesRatio)) : 0;
+  const likesTotal = config.includeLikes 
+  ? Math.max(50, Math.floor(totalViews * likesRatio)) 
+  : 0;
   const sharesTotal = config.includeShares ? Math.max(20, Math.floor(totalViews * sharesRatio)) : 0;
   const savesTotal = config.includeSaves ? Math.max(10, Math.floor(totalViews * savesRatio)) : 0;
   let commentsTotal = 0;
@@ -1401,7 +1403,7 @@ if (config.includeComments) {
       value = remaining;
     } else {
       const maxAllowed = remaining - (indexes.length - i - 1) * 10;
-      value = Math.min(maxAllowed, randomInt(10, 60));
+      value = Math.min(maxAllowed, randomInt(10, 25));
     }
 
     result[indexes[i]] = value;
