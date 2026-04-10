@@ -1380,7 +1380,7 @@ if (config.includeComments) {
 
   if (!config.includeLikes || likesTotal <= 0) return result;
 
-  const eligible = Array.from({ length: provisionalRuns.length }, (_, i) => i).slice(2);
+  const eligible = Array.from({ length: provisionalRuns.length }, (_, i) => i).slice(1);
 
   const activeCount = Math.max(
   2,
@@ -1403,12 +1403,12 @@ for (let i = 0; i < selected.length; i++) {
   let value;
 
   if (isLast) {
-    value = remaining;
-  } else {
+  value = Math.max(10, remaining); // 🔥 ensure last also >=10
+} else {
     value = Math.min(
-      remaining - (selected.length - i - 1) * 5,
-      randomInt(5, 10)
-    );
+  remaining - (selected.length - i - 1) * 10,
+  randomInt(10, 15) // 🔥 min 10, variation up to 15
+);
   }
 
   result[idx] = value;
@@ -1418,7 +1418,6 @@ for (let i = 0; i < selected.length; i++) {
 }
   // 🔥 ADD THIS EXACTLY HERE
   result[0] = 0;
-  result[1] = 0;
 
   return result;
 })();
