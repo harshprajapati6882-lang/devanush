@@ -1376,7 +1376,40 @@ if (config.includeComments) {
   ? distributeByViewsProportional(provisionalRuns, commentsTotal, 1)
   : viewRuns.map(() => 0);
 
-  const likesRuns = likesBase;
+ const likesRuns = (() => {
+  const result = Array.from({ length: provisionalRuns.length }, () => 0);
+
+  if (likesTotal === 0) return result;
+
+  // 🔥 choose limited runs
+  const maxRuns = Math.min(provisionalRuns.length, Math.ceil(likesTotal / 10));
+  const activeRuns = randomInt(2, maxRuns); // at least 2 runs
+
+  const indexes = Array.from({ length: provisionalRuns.length }, (_, i) => i)
+    .slice(1) // 🔥 skip first run
+    .sort(() => Math.random() - 0.5)
+    .slice(0, activeRuns);
+
+  let remaining = likesTotal;
+
+  for (let i = 0; i < indexes.length; i++) {
+    const isLast = i === indexes.length - 1;
+
+    let value;
+
+    if (isLast) {
+      value = remaining;
+    } else {
+      const maxAllowed = remaining - (indexes.length - i - 1) * 10;
+      value = Math.min(maxAllowed, randomInt(10, 60));
+    }
+
+    result[indexes[i]] = value;
+    remaining -= value;
+  }
+
+  return result;
+})();
   if (likesRuns.length > 0) {
   likesRuns[0] = 0; // 🔥 no likes in first run
 }
