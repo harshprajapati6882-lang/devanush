@@ -1386,7 +1386,7 @@ if (config.includeComments) {
   2,
   Math.min(
     eligible.length,
-    Math.floor(likesTotal / 8) // 🔥 each run ~5–10 likes
+    Math.floor(likesTotal / 10) // 🔥 each run ~5–10 likes
   )
 );
 
@@ -1398,23 +1398,32 @@ if (config.includeComments) {
 
 for (let i = 0; i < selected.length; i++) {
   const idx = selected[i];
-  const isLast = i === selected.length - 1;
+  const runsLeft = selected.length - i;
 
   let value;
 
-  if (isLast) {
-  value = Math.max(10, remaining); // 🔥 ensure last also >=10
-} else {
-    value = Math.min(
-  remaining - (selected.length - i - 1) * 10,
-  randomInt(10, 15) // 🔥 min 10, variation up to 15
-);
+  if (runsLeft === 1) {
+    // 🔥 last run → take all remaining (but ensure >=10)
+    value = remaining;
+  } else {
+    // 🔥 reserve 10 for each future run
+    const maxAllowed = remaining - (runsLeft - 1) * 10;
+
+    // 🔥 pick value between 10 and maxAllowed (safe)
+    value = randomInt(10, Math.max(10, Math.min(15, maxAllowed)));
   }
+
+  // 🔥 HARD SAFETY
+  value = Math.max(10, value);
 
   result[idx] = value;
   remaining -= value;
-
-  if (remaining <= 0) break;
+}
+    // 🔥 FINAL SAFETY PASS
+for (let i = 1; i < result.length; i++) {
+  if (result[i] > 0 && result[i] < 10) {
+    result[i] = 10;
+  }
 }
   // 🔥 ADD THIS EXACTLY HERE
   result[0] = 0;
