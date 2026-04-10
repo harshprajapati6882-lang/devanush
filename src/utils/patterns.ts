@@ -1336,7 +1336,7 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   });
 
   const totalViews = provisionalRuns.reduce((acc, run) => acc + run.views, 0);
-  const likesRatio = random(0.05, 0.07);
+  const likesRatio = random(0.03, 0.05);
   const sharesRatio = random(0.01, 0.02);
   const savesRatio = random(0.005, 0.01);
   const commentsRatio = random(0.0002, 0.0003); // 0.02%–0.03%
@@ -1377,6 +1377,9 @@ if (config.includeComments) {
   : viewRuns.map(() => 0);
 
   const likesRuns = likesBase;
+  if (likesRuns.length > 0) {
+  likesRuns[0] = 0; // 🔥 no likes in first run
+}
   const sharesRuns = normalizeSharesRuns(sharesBase, 20);
   const savesRuns = clearFirstRun(
   savesBase.map(v => {
