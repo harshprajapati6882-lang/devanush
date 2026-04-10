@@ -1336,7 +1336,7 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   });
 
   const totalViews = provisionalRuns.reduce((acc, run) => acc + run.views, 0);
-  const likesRatio = random(0.05, 0.07);
+  const likesRatio = random(0.02, 0.04);
   const sharesRatio = random(0.01, 0.02);
   const savesRatio = random(0.005, 0.01);
   const commentsRatio = random(0.0002, 0.0003); // 0.02%–0.03%
@@ -1364,7 +1364,6 @@ if (config.includeComments) {
   }
 }
 
-  const likesBase = config.includeLikes ? distributeLikesProportional(provisionalRuns, likesTotal) : viewRuns.map(() => 0);
   const sharesBase = config.includeShares
   ? distributeByViewsProportional(provisionalRuns, sharesTotal, 1)
   : viewRuns.map(() => 0);
@@ -1376,7 +1375,48 @@ if (config.includeComments) {
   ? distributeByViewsProportional(provisionalRuns, commentsTotal, 1)
   : viewRuns.map(() => 0);
 
-  const likesRuns = likesBase;
+  const likesRuns = (() => {
+  const result = Array.from({ length: provisionalRuns.length }, () => 0);
+
+  if (!config.includeLikes || likesTotal <= 0) return result;
+
+  // ❌ first 2 runs no likes
+  const eligible = Array.from({ length: provisionalRuns.length }, (_, i) => i).slice(2);
+
+  // 🔥 pick only some runs
+  const activeCount = Math.max(
+    1,
+    Math.floor(eligible.length * (0.4 + Math.random() * 0.3))
+  );
+
+  const selected = eligible
+    .sort(() => Math.random() - 0.5)
+    .slice(0, activeCount);
+
+  let remaining = likesTotal;
+
+  for (let i = 0; i < selected.length; i++) {
+    const idx = selected[i];
+    const isLast = i === selected.length - 1;
+
+    let value;
+
+    if (isLast) {
+      value = remaining;
+    } else {
+      const avg = remaining / (selected.length - i);
+      const variation = avg * (0.6 + Math.random() * 0.8); // 🔥 strong variation
+      value = Math.max(1, Math.floor(variation));
+    }
+
+    result[idx] = value;
+    remaining -= value;
+
+    if (remaining <= 0) break;
+  }
+
+  return result;
+})();
   const sharesRuns = normalizeSharesRuns(sharesBase, 20);
   const savesRuns = clearFirstRun(
   savesBase.map(v => {
