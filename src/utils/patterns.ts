@@ -1341,7 +1341,7 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   const savesRatio = random(0.005, 0.01);
   const commentsRatio = random(0.0002, 0.0003); // 0.02%–0.03%
 
-  const likesTotal = config.includeLikes ? Math.max(10, Math.floor(totalViews * likesRatio)) : 0;
+  const likesTotal = config.includeLikes ? Math.floor(totalViews * likesRatio) : 0;
   const sharesTotal = config.includeShares ? Math.max(20, Math.floor(totalViews * sharesRatio)) : 0;
   const savesTotal = config.includeSaves ? Math.max(10, Math.floor(totalViews * savesRatio)) : 0;
   let commentsTotal = 0;
@@ -1380,13 +1380,11 @@ if (config.includeComments) {
 
   if (!config.includeLikes || likesTotal <= 0) return result;
 
-  // ❌ first 2 runs no likes
   const eligible = Array.from({ length: provisionalRuns.length }, (_, i) => i).slice(2);
 
-  // 🔥 pick only some runs
   const activeCount = Math.max(
     1,
-    Math.floor(eligible.length * (0.4 + Math.random() * 0.3))
+    Math.floor(eligible.length * (0.15 + Math.random() * 0.2))
   );
 
   const selected = eligible
@@ -1405,7 +1403,7 @@ if (config.includeComments) {
       value = remaining;
     } else {
       const avg = remaining / (selected.length - i);
-      const variation = avg * (0.6 + Math.random() * 0.8); // 🔥 strong variation
+      const variation = avg * (0.6 + Math.random() * 0.8);
       value = Math.max(1, Math.floor(variation));
     }
 
@@ -1414,6 +1412,10 @@ if (config.includeComments) {
 
     if (remaining <= 0) break;
   }
+
+  // 🔥 ADD THIS EXACTLY HERE
+  result[0] = 0;
+  result[1] = 0;
 
   return result;
 })();
