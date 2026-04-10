@@ -1383,9 +1383,12 @@ if (config.includeComments) {
   const eligible = Array.from({ length: provisionalRuns.length }, (_, i) => i).slice(2);
 
   const activeCount = Math.max(
-    1,
-    Math.floor(eligible.length * (0.15 + Math.random() * 0.2))
-  );
+  2,
+  Math.min(
+    eligible.length,
+    Math.floor(likesTotal / 8) // 🔥 each run ~5–10 likes
+  )
+);
 
   const selected = eligible
     .sort(() => Math.random() - 0.5)
@@ -1393,26 +1396,26 @@ if (config.includeComments) {
 
   let remaining = likesTotal;
 
-  for (let i = 0; i < selected.length; i++) {
-    const idx = selected[i];
-    const isLast = i === selected.length - 1;
+for (let i = 0; i < selected.length; i++) {
+  const idx = selected[i];
+  const isLast = i === selected.length - 1;
 
-    let value;
+  let value;
 
-    if (isLast) {
-      value = remaining;
-    } else {
-      const avg = remaining / (selected.length - i);
-      const variation = avg * (0.6 + Math.random() * 0.8);
-      value = Math.max(1, Math.floor(variation));
-    }
-
-    result[idx] = value;
-    remaining -= value;
-
-    if (remaining <= 0) break;
+  if (isLast) {
+    value = remaining;
+  } else {
+    value = Math.min(
+      remaining - (selected.length - i - 1) * 5,
+      randomInt(5, 10)
+    );
   }
 
+  result[idx] = value;
+  remaining -= value;
+
+  if (remaining <= 0) break;
+}
   // 🔥 ADD THIS EXACTLY HERE
   result[0] = 0;
   result[1] = 0;
