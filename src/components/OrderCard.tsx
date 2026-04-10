@@ -113,15 +113,55 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
   const plannedData = useMemo(() => {
   const runs = order.runs || [];
 
-  return runs.map((run, index) => ({
-    time: run.at,
-    views: run.cumulativeViews || 0,
-    likes: (run.cumulativeLikes || 0) * 10,
-shares: (run.cumulativeShares || 0) * 10,
-saves: (run.cumulativeSaves || 0) * 10,
-comments: (run.cumulativeComments || 0) * 10,
-  }));
-}, [order.runs]);
+  const createdAt = new Date(order.createdAt).getTime();
+  const firstRunTime = runs[0]?.at ? new Date(runs[0].at).getTime() : createdAt;
+
+  let v = 0, l = 0, sh = 0, sa = 0, c = 0;
+
+  const data = [];
+
+  // 🔥 POINT 1: order created
+  data.push({
+    time: createdAt,
+    views: 0,
+    likes: 0,
+    shares: 0,
+    saves: 0,
+    comments: 0,
+  });
+
+  // 🔥 POINT 2: delay end (still 0)
+  if (firstRunTime > createdAt) {
+    data.push({
+      time: firstRunTime,
+      views: 0,
+      likes: 0,
+      shares: 0,
+      saves: 0,
+      comments: 0,
+    });
+  }
+
+  // 🔥 RUNS START
+  runs.forEach((run) => {
+    v = run.cumulativeViews || v;
+    l = run.cumulativeLikes || l;
+    sh = run.cumulativeShares || sh;
+    sa = run.cumulativeSaves || sa;
+    c = run.cumulativeComments || c;
+
+    data.push({
+      time: run.at,
+      views: v,
+      likes: l,
+      shares: sh,
+      saves: sa,
+      comments: c,
+    });
+  });
+
+  return data;
+}, [order.runs, order.createdAt]);
   
   const shortLink =
     order.link.length > 56 ? `${order.link.slice(0, 36)}...${order.link.slice(-14)}` : order.link;
