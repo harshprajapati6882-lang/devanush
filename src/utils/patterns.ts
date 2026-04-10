@@ -1336,12 +1336,12 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   });
 
   const totalViews = provisionalRuns.reduce((acc, run) => acc + run.views, 0);
-  const likesRatio = random(0.02, 0.04);
+  const likesRatio = random(0.05, 0.07);
   const sharesRatio = random(0.01, 0.02);
   const savesRatio = random(0.005, 0.01);
   const commentsRatio = random(0.0002, 0.0003); // 0.02%–0.03%
 
-  const likesTotal = config.includeLikes ? Math.floor(totalViews * likesRatio) : 0;
+  const likesTotal = config.includeLikes ? Math.max(10, Math.floor(totalViews * likesRatio)) : 0;
   const sharesTotal = config.includeShares ? Math.max(20, Math.floor(totalViews * sharesRatio)) : 0;
   const savesTotal = config.includeSaves ? Math.max(10, Math.floor(totalViews * savesRatio)) : 0;
   let commentsTotal = 0;
@@ -1364,6 +1364,7 @@ if (config.includeComments) {
   }
 }
 
+  const likesBase = config.includeLikes ? distributeLikesProportional(provisionalRuns, likesTotal) : viewRuns.map(() => 0);
   const sharesBase = config.includeShares
   ? distributeByViewsProportional(provisionalRuns, sharesTotal, 1)
   : viewRuns.map(() => 0);
@@ -1375,61 +1376,7 @@ if (config.includeComments) {
   ? distributeByViewsProportional(provisionalRuns, commentsTotal, 1)
   : viewRuns.map(() => 0);
 
-  const likesRuns = (() => {
-  const result = Array.from({ length: provisionalRuns.length }, () => 0);
-
-  if (!config.includeLikes || likesTotal <= 0) return result;
-
-  const eligible = Array.from({ length: provisionalRuns.length }, (_, i) => i).slice(1);
-
-  const activeCount = Math.max(
-  2,
-  Math.min(
-    eligible.length,
-    Math.floor(likesTotal / 10) // 🔥 each run ~5–10 likes
-  )
-);
-
-  const selected = eligible
-    .sort(() => Math.random() - 0.5)
-    .slice(0, activeCount);
-
-  let remaining = likesTotal;
-
-for (let i = 0; i < selected.length; i++) {
-  const idx = selected[i];
-  const runsLeft = selected.length - i;
-
-  let value;
-
-  if (runsLeft === 1) {
-    // 🔥 last run → take all remaining (but ensure >=10)
-    value = remaining;
-  } else {
-    // 🔥 reserve 10 for each future run
-    const maxAllowed = remaining - (runsLeft - 1) * 10;
-
-    // 🔥 pick value between 10 and maxAllowed (safe)
-    value = randomInt(10, Math.max(10, Math.min(15, maxAllowed)));
-  }
-
-  // 🔥 HARD SAFETY
-  value = Math.max(10, value);
-
-  result[idx] = value;
-  remaining -= value;
-}
-    // 🔥 FINAL SAFETY PASS
-for (let i = 1; i < result.length; i++) {
-  if (result[i] > 0 && result[i] < 10) {
-    result[i] = 10;
-  }
-}
-  // 🔥 ADD THIS EXACTLY HERE
-  result[0] = 0;
-
-  return result;
-})();
+  const likesRuns = likesBase;
   const sharesRuns = normalizeSharesRuns(sharesBase, 20);
   const savesRuns = clearFirstRun(
   savesBase.map(v => {
