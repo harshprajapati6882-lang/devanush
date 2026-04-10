@@ -132,14 +132,14 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
 
   // 🔥 POINT 2: delay end (still 0)
   if (firstRunTime > createdAt) {
- data.push({
-  time: run.at,
-  views: v,
-  likes: l * 10,       // 🔥 restore scaling
-  shares: sh * 10,
-  saves: sa * 10,
-  comments: c * 10,
-});
+  data.push({
+    time: firstRunTime,   // ✅ FIXED
+    views: 0,
+    likes: 0,
+    shares: 0,
+    saves: 0,
+    comments: 0,
+  });
 }
 
   // 🔥 RUNS START
@@ -153,10 +153,10 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
     data.push({
       time: run.at,
       views: v,
-      likes: l,
-      shares: sh,
+      likes: l*10,
+      shares: sh*10,
       saves: sa,
-      comments: c,
+      comments: c*10,
     });
   });
 
