@@ -132,7 +132,7 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
 
   // 🔥 POINT 2: delay end (still 0)
   if (firstRunTime > createdAt) {
-    data.push({
+ data.push({
   time: run.at,
   views: v,
   likes: l * 10,       // 🔥 restore scaling
@@ -140,7 +140,7 @@ export function OrderCard({ order, onControl, onClone, controlBusy }: OrderCardP
   saves: sa * 10,
   comments: c * 10,
 });
-  }
+}
 
   // 🔥 RUNS START
   runs.forEach((run) => {
