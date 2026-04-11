@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import LoginPage from "./pages/LoginPage";
+import AdminPage from "./pages/AdminPage";
 import { APIsPage } from "./pages/APIsPage";
 import { BundlesPage } from "./pages/BundlesPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -10,9 +11,10 @@ import type { ApiPanel, Bundle, CreatedOrder, RunStatus } from "./types/order";
 import { fetchServices, updateOrderControl, fetchOrderRuns } from "./utils/api";
 import { cn } from "./utils/cn";
 
-type NavKey = "dashboard" | "new-order" | "orders" | "apis" | "bundles";
+type NavKey = "dashboard" | "new-order" | "orders" | "apis" | "bundles" | "admin";
 
 const NAV_ITEMS: { key: NavKey; label: string; icon: string }[] = [
+  { key: "admin", label: "Admin", icon: "👑" },
   { key: "dashboard", label: "Dashboard", icon: "📊" },
   { key: "new-order", label: "New Order", icon: "⚡" },
   { key: "orders", label: "Orders", icon: "📦" },
@@ -340,6 +342,9 @@ useEffect(() => {
   }, [activePage]); // 🔥 Only re-setup when page changes
 
   const content = useMemo(() => {
+    if (activePage === "admin") {
+  return <AdminPage />;
+}
     if (activePage === "new-order") {
       return (
         <NewOrderPage
