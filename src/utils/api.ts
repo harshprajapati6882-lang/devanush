@@ -77,7 +77,7 @@ function getAuthHeaders() {
   const token = getToken();
   return {
     "Content-Type": "application/json",
-    ...(token ? { Authorization: token } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 
