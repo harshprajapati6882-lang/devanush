@@ -180,7 +180,7 @@ useEffect(() => {
   useEffect(() => {
   const token = localStorage.getItem("token");
 
-  fetch("https://backend-new-6tzb.onrender.com/api/orders", {
+  fetch("https://backend-new-6tzb.onrender.com/api/orders/status", {
     headers: {
       Authorization: token || "",
     },
