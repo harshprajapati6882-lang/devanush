@@ -532,7 +532,15 @@ export default function App() {
   }, [activePage, apis, bundles, orders, fetchingApiId, controllingOrderId, ordersNotice, cloneSourceOrder, navigateToPage, persistOrders, persistApis, persistBundles, syncOrdersWithBackend]);
 
   return (
-    <div className="min-h-screen bg-black text-gray-100">
+    <div
+  className="min-h-screen bg-cover bg-center relative text-gray-100"
+  style={{ backgroundImage: "url('/wallpaper.jpg')" }}
+>
+  {/* overlay */}
+  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+
+  {/* content */}
+  <div className="relative z-10">
       <div className="flex min-h-screen">
         <aside className="w-64 border-r border-yellow-500/20 bg-gradient-to-b from-gray-950 to-black p-6">
           <div className="mb-8 space-y-1">
@@ -607,6 +615,7 @@ export default function App() {
 
         <main className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-950 via-black to-gray-950">{content}</main>
       </div>
-    </div>
+      </div> {/* content */}
+</div> {/* background */}
   );
 }
