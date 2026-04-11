@@ -653,7 +653,7 @@ useEffect(() => {
 
         <main className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-950 via-black to-gray-950">{content}</main>
       </div>
-      </div> {/* content */}
-</div> {/* background */}
+      </div> 
+</div> 
   );
 }
