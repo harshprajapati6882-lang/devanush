@@ -1336,7 +1336,7 @@ export function createPatternPlan(config: OrderConfig): PatternPlan {
   });
 
   const totalViews = provisionalRuns.reduce((acc, run) => acc + run.views, 0);
-  const likesRatio = random(0.03, 0.05);
+  const likesRatio = random(0.04, 0.06);
   const sharesRatio = random(0.01, 0.02);
   const savesRatio = random(0.005, 0.01);
   const commentsRatio = random(0.0002, 0.0003); // 0.02%–0.03%
@@ -1376,62 +1376,7 @@ if (config.includeComments) {
   ? distributeByViewsProportional(provisionalRuns, commentsTotal, 1)
   : viewRuns.map(() => 0);
 
-  let likesRuns = [...likesBase];
-
-// 🔥 STEP 1: skip some runs (first + middle priority)
-if (likesRuns.length > 2) {
-  const skipIndexes = new Set<number>();
-
-  // always try skipping first run
-  skipIndexes.add(0);
-
-  // try skipping a middle run
-  const mid = Math.floor(likesRuns.length / 2);
-  if (Math.random() < 0.7) skipIndexes.add(mid);
-
-  // optional extra skip if many runs
-  if (likesRuns.length > 6 && Math.random() < 0.5) {
-    skipIndexes.add(randomInt(1, likesRuns.length - 2));
-  }
-
-  // collect removed likes
-  let carry = 0;
-  skipIndexes.forEach(i => {
-    carry += likesRuns[i];
-    likesRuns[i] = 0;
-  });
-
-  // 🔥 STEP 2: redistribute to remaining runs
-  const activeIndexes = likesRuns
-    .map((v, i) => ({ v, i }))
-    .filter(x => !skipIndexes.has(x.i))
-    .map(x => x.i);
-
-  let remaining = carry;
-
-  for (let i = 0; i < activeIndexes.length; i++) {
-    if (remaining <= 0) break;
-
-    const idx = activeIndexes[i];
-
-    const add = Math.min(
-      remaining,
-      randomInt(2, 6) // small boost
-    );
-
-    likesRuns[idx] += add;
-    remaining -= add;
-  }
-
-  // if still remaining → dump into highest run
-  if (remaining > 0) {
-    let maxIndex = activeIndexes[0];
-    for (let i of activeIndexes) {
-      if (likesRuns[i] > likesRuns[maxIndex]) maxIndex = i;
-    }
-    likesRuns[maxIndex] += remaining;
-  }
-}
+  const likesRuns = likesBase;
   const sharesRuns = normalizeSharesRuns(sharesBase, 20);
   const savesRuns = clearFirstRun(
   savesBase.map(v => {
