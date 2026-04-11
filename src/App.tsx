@@ -152,9 +152,8 @@ useEffect(() => {
 }, []);
 
 if (token === null) {
-  return null; // wait for load
+  return <div style={{ color: "white", padding: 20 }}>Loading...</div>;
 }
-
 if (!token) {
   return <LoginPage />;
 }
