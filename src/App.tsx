@@ -1,18 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import LoginPage from "./pages/LoginPage";
-import AdminPage from "./pages/AdminPage";
 import { APIsPage } from "./pages/APIsPage";
 import { BundlesPage } from "./pages/BundlesPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { NewOrderPage } from "./pages/NewOrderPage";
 import { OrdersPage } from "./pages/OrdersPage";
 import type { ApiPanel, Bundle, CreatedOrder, RunStatus } from "./types/order";
-import { fetchServices, updateOrderControl, fetchOrderRuns, fetchAllOrdersStatus } from "./utils/api";
+import { fetchServices, updateOrderControl, fetchOrderRuns } from "./utils/api";
 import { cn } from "./utils/cn";
 
-type NavKey = "dashboard" | "new-order" | "orders" | "apis" | "bundles" | "admin";
+type NavKey = "dashboard" | "new-order" | "orders" | "apis" | "bundles";
 
+const NAV_ITEMS: { key: NavKey; label: string; icon: string }[] = [
+  { key: "dashboard", label: "Dashboard", icon: "📊" },
+  { key: "new-order", label: "New Order", icon: "⚡" },
+  { key: "orders", label: "Orders", icon: "📦" },
+  { key: "apis", label: "APIs", icon: "🔗" },
+  { key: "bundles", label: "Bundles", icon: "📁" },
+];
 
 const BATMAN_QUOTES = [
   "It's not who I am underneath, but what I do that defines me.",
@@ -52,8 +57,6 @@ function getRandomQuote() {
 }
 
 function readStorage<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
@@ -68,7 +71,6 @@ function hydrateOrderDates(orders: CreatedOrder[]): CreatedOrder[] {
   ? order.runs.map((run, index) => ({
       run: Number.isFinite(run?.run) ? run.run : index + 1,
       at: run?.at ? new Date(run.at) : new Date(),
-    status: run?.status, // 🔥 ADD THIS (VERY IMPORTANT)
       minutesFromStart: Number.isFinite(run?.minutesFromStart) ? run.minutesFromStart : 0,
 
       views: Number.isFinite(run?.views) ? run.views : 0,
@@ -85,15 +87,15 @@ function hydrateOrderDates(orders: CreatedOrder[]): CreatedOrder[] {
     }))
       : [];
 
-    const safeRunStatuses: RunStatus[] = safeRuns.map((run: any) => {
-  if (run.status === "completed") return "completed";
-  if (run.status === "failed") return "failed";
-  if (run.status === "processing") return "running";
-  if (run.status === "pending") return "pending";
-  if (run.status === "queued") return "pending";
-  if (run.status === "cancelled") return "cancelled";
-  return "pending";
-});
+    const safeRunStatuses: RunStatus[] = Array.isArray(order?.runStatuses)
+      ? safeRuns.map((_, index) => {
+          const next = order.runStatuses[index];
+          return next === "completed" || next === "cancelled" || next === "retrying" ? next : "pending";
+        })
+      : safeRuns.map(() => "pending");
+    const safeRunErrors = Array.isArray(order?.runErrors)
+      ? safeRuns.map((_, index) => order.runErrors?.[index] ?? "")
+      : safeRuns.map(() => "");
 
     return {
       ...order,
@@ -101,18 +103,17 @@ function hydrateOrderDates(orders: CreatedOrder[]): CreatedOrder[] {
       smmOrderId: order?.smmOrderId ?? "N/A",
       serviceId: order?.serviceId ?? "N/A",
       status:
-  order?.status === "failed" ||
-  order?.status === "paused" ||
-  order?.status === "cancelled" ||
-  order?.status === "completed" ||
-  order?.status === "running" ||
-  order?.status === "processing" ||
-  order?.status === "pending"   // 🔥 ADD THIS
-    ? order.status
-    : "running",
+        order?.status === "failed" ||
+        order?.status === "paused" ||
+        order?.status === "cancelled" ||
+        order?.status === "completed" ||
+        order?.status === "running" ||
+        order?.status === "processing"
+          ? order.status
+          : "running",
       completedRuns: Number.isFinite(order?.completedRuns) ? order.completedRuns : 0,
       runStatuses: safeRunStatuses,
-      runErrors: [],
+      runErrors: safeRunErrors,
       runRetries: order?.runRetries || [],
       runOriginalTimes: order?.runOriginalTimes || [],
       runCurrentTimes: order?.runCurrentTimes || [],
@@ -140,72 +141,18 @@ function hydrateBundles(bundles: Bundle[]): Bundle[] {
 }
 
 export default function App() {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const user = typeof window !== "undefined"
-  ? JSON.parse(localStorage.getItem("user") || "null")
-  : null;
-
-const NAV_ITEMS: { key: NavKey; label: string; icon: string }[] = [
-  ...(user?.role === "admin"
-    ? [{ key: "admin", label: "Admin", icon: "👑" }]
-    : []),
-
-  { key: "dashboard", label: "Dashboard", icon: "📊" },
-  { key: "new-order", label: "New Order", icon: "⚡" },
-  { key: "orders", label: "Orders", icon: "📦" },
-  { key: "apis", label: "APIs", icon: "🔗" },
-  { key: "bundles", label: "Bundles", icon: "📁" },
-];
-
-if (!token) {
-  return <LoginPage />;
-}
-  const [activePage, setActivePage] = useState<NavKey>("new-order");
-
-useEffect(() => {
-  const saved = localStorage.getItem("dev-smm-active-page");
-  if (
-    saved === "dashboard" ||
-    saved === "new-order" ||
-    saved === "orders" ||
-    saved === "apis" ||
-    saved === "bundles"
-  ) {
-    setActivePage(saved);
-  }
-}, []);
+  const [activePage, setActivePage] = useState<NavKey>(() => {
+    const saved = localStorage.getItem("dev-smm-active-page");
+    if (saved === "dashboard" || saved === "new-order" || saved === "orders" || saved === "apis" || saved === "bundles") {
+      return saved;
+    }
+    return "new-order";
+  });
 
   const [ordersNotice, setOrdersNotice] = useState("");
-  const [orders, setOrders] = useState<CreatedOrder[]>([]);
-  const [apis, setApis] = useState<ApiPanel[]>([]);
-  const [bundles, setBundles] = useState<Bundle[]>([]);
-
-useEffect(() => {
-  fetchAllOrdersStatus()
-    .then((data) => {
-      const fixed = (data.orders || []).map((o: any) => ({
-        id: o.schedulerOrderId, // ✅ REQUIRED
-        schedulerOrderId: o.schedulerOrderId,
-        name: o.name,
-        link: o.link,
-        status: o.status,
-        totalRuns: o.totalRuns,
-        completedRuns: o.completedRuns,
-        runStatuses: o.runStatuses || [],
-        createdAt: o.createdAt,
-        lastUpdatedAt: o.lastUpdatedAt,
-        runs: o.runs || [],
-      }));
-
-      setOrders(hydrateOrderDates(fixed));
-    })
-    .catch((err) => {
-      console.error("Failed to load orders:", err);
-    });
-
-  setApis(hydrateApis(readStorage<ApiPanel[]>("dev-smm-apis", [])));
-  setBundles(hydrateBundles(readStorage<Bundle[]>("dev-smm-bundles", [])));
-}, []);
+  const [orders, setOrders] = useState<CreatedOrder[]>(() => hydrateOrderDates(readStorage<CreatedOrder[]>("dev-smm-orders", [])));
+  const [apis, setApis] = useState<ApiPanel[]>(() => hydrateApis(readStorage<ApiPanel[]>("dev-smm-apis", [])));
+  const [bundles, setBundles] = useState<Bundle[]>(() => hydrateBundles(readStorage<Bundle[]>("dev-smm-bundles", [])));
   const [cloneSourceOrder, setCloneSourceOrder] = useState<CreatedOrder | null>(null);
   const [fetchingApiId, setFetchingApiId] = useState<string | null>(null);
   const [controllingOrderId, setControllingOrderId] = useState<string | null>(null);
@@ -373,9 +320,6 @@ useEffect(() => {
   }, [activePage]); // 🔥 Only re-setup when page changes
 
   const content = useMemo(() => {
-    if (activePage === "admin") {
-  return <AdminPage />;
-}
     if (activePage === "new-order") {
       return (
         <NewOrderPage
@@ -588,15 +532,7 @@ useEffect(() => {
   }, [activePage, apis, bundles, orders, fetchingApiId, controllingOrderId, ordersNotice, cloneSourceOrder, navigateToPage, persistOrders, persistApis, persistBundles, syncOrdersWithBackend]);
 
   return (
-    <div
-  className="min-h-screen bg-cover bg-center relative text-gray-100"
-  style={{ backgroundImage: "url('/wallpaper.jpg')" }}
->
-  {/* overlay */}
-  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
-
-  {/* content */}
-  <div className="relative z-10">
+    <div className="min-h-screen bg-black text-gray-100">
       <div className="flex min-h-screen">
         <aside className="w-64 border-r border-yellow-500/20 bg-gradient-to-b from-gray-950 to-black p-6">
           <div className="mb-8 space-y-1">
@@ -611,15 +547,6 @@ useEffect(() => {
               </div>
             </div>
           </div>
-
-          <button
-  onClick={() => {
-    localStorage.removeItem("token");
-    window.location.reload();
-  }}
->
-  Logout
-</button>
 
           <nav className="space-y-2">
             {NAV_ITEMS.map((item) => {
@@ -680,7 +607,6 @@ useEffect(() => {
 
         <main className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-950 via-black to-gray-950">{content}</main>
       </div>
-      </div> 
-</div> 
+    </div>
   );
 }
