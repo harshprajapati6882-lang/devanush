@@ -178,7 +178,16 @@ useEffect(() => {
   const [apis, setApis] = useState<ApiPanel[]>([]);
   const [bundles, setBundles] = useState<Bundle[]>([]);
   useEffect(() => {
-  setOrders(hydrateOrderDates(readStorage<CreatedOrder[]>("dev-smm-orders", [])));
+  const token = localStorage.getItem("token");
+
+  fetch("https://backend-new-6tzb.onrender.com/api/orders", {
+    headers: {
+      Authorization: token || "",
+    },
+  })
+    .then(res => res.json())
+    .then(data => setOrders(hydrateOrderDates(data.orders || [])));
+
   setApis(hydrateApis(readStorage<ApiPanel[]>("dev-smm-apis", [])));
   setBundles(hydrateBundles(readStorage<Bundle[]>("dev-smm-bundles", [])));
 }, []);
