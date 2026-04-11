@@ -1,3 +1,4 @@
+import { fetchAllOrdersStatus } from "./utils/api";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { APIsPage } from "./pages/APIsPage";
@@ -156,8 +157,59 @@ export default function App() {
   const [cloneSourceOrder, setCloneSourceOrder] = useState<CreatedOrder | null>(null);
   const [fetchingApiId, setFetchingApiId] = useState<string | null>(null);
   const [controllingOrderId, setControllingOrderId] = useState<string | null>(null);
-  
   const [batmanQuote] = useState(() => getRandomQuote());
+  useEffect(() => {
+  async function loadOrdersFromBackend() {
+    try {
+      const data = await fetchAllOrdersStatus();
+
+      const orders = data.orders.map(order => ({
+        id: order.schedulerOrderId,
+        name: order.name,
+        schedulerOrderId: order.schedulerOrderId,
+        smmOrderId: "N/A",
+        link: order.link,
+        totalViews: 0,
+        startDelayHours: 0,
+        patternType: "manual",
+        patternName: "Recovered",
+        runs: order.runs.map((r, i) => ({
+          run: i + 1,
+          at: new Date(r.time),
+          minutesFromStart: 0,
+          views: 0,
+          likes: 0,
+          shares: 0,
+          saves: 0,
+          comments: 0,
+          cumulativeViews: 0,
+          cumulativeLikes: 0,
+          cumulativeShares: 0,
+          cumulativeSaves: 0,
+          cumulativeComments: 0,
+        })),
+        engagement: { likes: 0, shares: 0, saves: 0 },
+        serviceId: "auto",
+        selectedAPI: null,
+        selectedBundle: "",
+        status: order.status,
+        completedRuns: order.completedRuns,
+        runStatuses: order.runStatuses,
+        createdAt: order.createdAt,
+        lastUpdatedAt: order.lastUpdatedAt,
+      }));
+
+      localStorage.setItem("dev-smm-orders", JSON.stringify(orders));
+      setOrders(orders);
+
+      console.log("✅ Orders auto-loaded");
+    } catch (err) {
+      console.error("❌ Error loading orders", err);
+    }
+  }
+
+  loadOrdersFromBackend();
+}, []);
 
   // 🔥 NEW: Track if sync is in progress to prevent render loops
   const isSyncingRef = useRef(false);
