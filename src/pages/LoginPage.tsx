@@ -44,6 +44,31 @@ export default function LoginPage() {
   return (
     <div style={{ padding: 40 }}>
       <h2>Login</h2>
+      <button
+  onClick={async () => {
+    const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Signup failed");
+      return;
+    }
+
+    alert("Account created! Now login.");
+  }}
+>
+  Signup
+</button>
 
       <input
         type="email"
