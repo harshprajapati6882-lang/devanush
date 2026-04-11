@@ -1376,7 +1376,7 @@ if (config.includeComments) {
   ? distributeByViewsProportional(provisionalRuns, commentsTotal, 1)
   : viewRuns.map(() => 0);
 
-  const likesRuns = clearFirstRun(likesBase);
+  const likesRuns = likesBase;
   const sharesRuns = normalizeSharesRuns(sharesBase, 20);
   const savesRuns = clearFirstRun(
   savesBase.map(v => {
