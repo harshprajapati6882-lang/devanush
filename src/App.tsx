@@ -14,7 +14,10 @@ import { cn } from "./utils/cn";
 type NavKey = "dashboard" | "new-order" | "orders" | "apis" | "bundles" | "admin";
 
 const NAV_ITEMS: { key: NavKey; label: string; icon: string }[] = [
-  { key: "admin", label: "Admin", icon: "👑" },
+  ...(user?.role === "admin"
+    ? [{ key: "admin", label: "Admin", icon: "👑" }]
+    : []),
+
   { key: "dashboard", label: "Dashboard", icon: "📊" },
   { key: "new-order", label: "New Order", icon: "⚡" },
   { key: "orders", label: "Orders", icon: "📦" },
@@ -147,6 +150,9 @@ function hydrateBundles(bundles: Bundle[]): Bundle[] {
 
 export default function App() {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const user = typeof window !== "undefined"
+  ? JSON.parse(localStorage.getItem("user") || "null")
+  : null;
 
 if (!token) {
   return <LoginPage />;
