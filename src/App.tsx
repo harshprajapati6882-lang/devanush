@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import LoginPage from "./pages/LoginPage";
 import { APIsPage } from "./pages/APIsPage";
 import { BundlesPage } from "./pages/BundlesPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -141,6 +142,10 @@ function hydrateBundles(bundles: Bundle[]): Bundle[] {
 }
 
 export default function App() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+  return <LoginPage />;
+}
   const [activePage, setActivePage] = useState<NavKey>(() => {
     const saved = localStorage.getItem("dev-smm-active-page");
     if (saved === "dashboard" || saved === "new-order" || saved === "orders" || saved === "apis" || saved === "bundles") {
@@ -555,6 +560,15 @@ export default function App() {
               </div>
             </div>
           </div>
+
+          <button
+  onClick={() => {
+    localStorage.removeItem("token");
+    window.location.reload();
+  }}
+>
+  Logout
+</button>
 
           <nav className="space-y-2">
             {NAV_ITEMS.map((item) => {
