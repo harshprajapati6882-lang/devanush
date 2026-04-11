@@ -154,9 +154,6 @@ const NAV_ITEMS: { key: NavKey; label: string; icon: string }[] = [
   { key: "apis", label: "APIs", icon: "🔗" },
   { key: "bundles", label: "Bundles", icon: "📁" },
 ];
-  const user = typeof window !== "undefined"
-  ? JSON.parse(localStorage.getItem("user") || "null")
-  : null;
 
 if (!token) {
   return <LoginPage />;
