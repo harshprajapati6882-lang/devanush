@@ -68,6 +68,7 @@ function hydrateOrderDates(orders: CreatedOrder[]): CreatedOrder[] {
   ? order.runs.map((run, index) => ({
       run: Number.isFinite(run?.run) ? run.run : index + 1,
       at: run?.at ? new Date(run.at) : new Date(),
+    status: run?.status, // 🔥 ADD THIS (VERY IMPORTANT)
       minutesFromStart: Number.isFinite(run?.minutesFromStart) ? run.minutesFromStart : 0,
 
       views: Number.isFinite(run?.views) ? run.views : 0,
@@ -84,15 +85,15 @@ function hydrateOrderDates(orders: CreatedOrder[]): CreatedOrder[] {
     }))
       : [];
 
-    const safeRunStatuses: RunStatus[] = Array.isArray(order?.runStatuses)
-      ? safeRuns.map((_, index) => {
-          const next = order.runStatuses[index];
-          return next === "completed" || next === "cancelled" || next === "retrying" ? next : "pending";
-        })
-      : safeRuns.map(() => "pending");
-    const safeRunErrors = Array.isArray(order?.runErrors)
-      ? safeRuns.map((_, index) => order.runErrors?.[index] ?? "")
-      : safeRuns.map(() => "");
+    const safeRunStatuses: RunStatus[] = safeRuns.map((run: any) => {
+  if (run.status === "completed") return "completed";
+  if (run.status === "failed") return "failed";
+  if (run.status === "processing") return "running";
+  if (run.status === "pending") return "pending";
+  if (run.status === "queued") return "pending";
+  if (run.status === "cancelled") return "cancelled";
+  return "pending";
+});
 
     return {
       ...order,
