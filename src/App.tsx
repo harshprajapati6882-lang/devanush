@@ -58,6 +58,8 @@ function getRandomQuote() {
 }
 
 function readStorage<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
@@ -156,18 +158,30 @@ if (token === null) {
 if (!token) {
   return <LoginPage />;
 }
-  const [activePage, setActivePage] = useState<NavKey>(() => {
-    const saved = localStorage.getItem("dev-smm-active-page");
-    if (saved === "dashboard" || saved === "new-order" || saved === "orders" || saved === "apis" || saved === "bundles") {
-      return saved;
-    }
-    return "new-order";
-  });
+  const [activePage, setActivePage] = useState<NavKey>("new-order");
+
+useEffect(() => {
+  const saved = localStorage.getItem("dev-smm-active-page");
+  if (
+    saved === "dashboard" ||
+    saved === "new-order" ||
+    saved === "orders" ||
+    saved === "apis" ||
+    saved === "bundles"
+  ) {
+    setActivePage(saved);
+  }
+}, []);
 
   const [ordersNotice, setOrdersNotice] = useState("");
-  const [orders, setOrders] = useState<CreatedOrder[]>(() => hydrateOrderDates(readStorage<CreatedOrder[]>("dev-smm-orders", [])));
-  const [apis, setApis] = useState<ApiPanel[]>(() => hydrateApis(readStorage<ApiPanel[]>("dev-smm-apis", [])));
-  const [bundles, setBundles] = useState<Bundle[]>(() => hydrateBundles(readStorage<Bundle[]>("dev-smm-bundles", [])));
+  const [orders, setOrders] = useState<CreatedOrder[]>([]);
+  const [apis, setApis] = useState<ApiPanel[]>([]);
+  const [bundles, setBundles] = useState<Bundle[]>([]);
+  useEffect(() => {
+  setOrders(hydrateOrderDates(readStorage<CreatedOrder[]>("dev-smm-orders", [])));
+  setApis(hydrateApis(readStorage<ApiPanel[]>("dev-smm-apis", [])));
+  setBundles(hydrateBundles(readStorage<Bundle[]>("dev-smm-bundles", [])));
+}, []);
   const [cloneSourceOrder, setCloneSourceOrder] = useState<CreatedOrder | null>(null);
   const [fetchingApiId, setFetchingApiId] = useState<string | null>(null);
   const [controllingOrderId, setControllingOrderId] = useState<string | null>(null);
