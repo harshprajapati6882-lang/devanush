@@ -1395,17 +1395,7 @@ if (likesRuns.length > 1) {
   likesRuns[maxIndex] += carry;
 }
 
-  // move to strongest run
-  let maxIndex = 1;
-  for (let i = 2; i < likesRuns.length; i++) {
-    if (likesRuns[i] > likesRuns[maxIndex]) {
-      maxIndex = i;
-    }
-  }
-
-  likesRuns[maxIndex] += carry;
-} // 🔥 no likes in first run
-}
+  
   const sharesRuns = normalizeSharesRuns(sharesBase, 20);
   const savesRuns = clearFirstRun(
   savesBase.map(v => {
