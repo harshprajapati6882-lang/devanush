@@ -1045,17 +1045,24 @@ function distributeLikesProportional(runs: { views: number }[], targetTotal: num
 
   const totalViews = Math.max(1, runs.reduce((sum, run) => sum + Math.max(0, run.views), 0));
   const minimumPerRun = 10;
-  const likesTarget = Math.max(targetTotal, runs.length * minimumPerRun);
+  const likesTarget = targetTotal;
+  // 🔥 only use some runs (not all)
+const activeRunsCount = Math.max(2, Math.floor(runs.length * 0.5));
+
+const activeIndexes = Array.from({ length: runs.length }, (_, i) => i)
+  .sort(() => Math.random() - 0.5)
+  .slice(0, activeRunsCount);
 
   const baseShares = runs.map((run) => (Math.max(0, run.views) / totalViews) * likesTarget);
   const withVariation = baseShares.map((base) => base * random(0.8, 1.2));
 
-  const preliminary = withVariation.map((value) => {
+  const preliminary = withVariation.map((value, i) => {
+  if (!activeIndexes.includes(i)) return 0; // 🔥 skip some runs
+
   const base = Math.round(value);
 
-  // 🔥 allow variation instead of forcing 10
   if (base < minimumPerRun) {
-    return randomInt(10, 14); // early low but not flat
+    return randomInt(10, 14);
   }
 
   return clamp(base + randomInt(-3, 3), 10, 20);
