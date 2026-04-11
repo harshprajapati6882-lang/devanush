@@ -100,7 +100,6 @@ function hydrateOrderDates(orders: CreatedOrder[]): CreatedOrder[] {
       smmOrderId: order?.smmOrderId ?? "N/A",
       serviceId: order?.serviceId ?? "N/A",
       status:
-        status:
   order?.status === "failed" ||
   order?.status === "paused" ||
   order?.status === "cancelled" ||
