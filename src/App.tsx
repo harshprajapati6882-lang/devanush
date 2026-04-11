@@ -8,7 +8,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { NewOrderPage } from "./pages/NewOrderPage";
 import { OrdersPage } from "./pages/OrdersPage";
 import type { ApiPanel, Bundle, CreatedOrder, RunStatus } from "./types/order";
-import { fetchServices, updateOrderControl, fetchOrderRuns } from "./utils/api";
+import { fetchServices, updateOrderControl, fetchOrderRuns, fetchAllOrdersStatus } from "./utils/api";
 import { cn } from "./utils/cn";
 
 type NavKey = "dashboard" | "new-order" | "orders" | "apis" | "bundles" | "admin";
@@ -177,11 +177,12 @@ useEffect(() => {
   const [orders, setOrders] = useState<CreatedOrder[]>([]);
   const [apis, setApis] = useState<ApiPanel[]>([]);
   const [bundles, setBundles] = useState<Bundle[]>([]);
-  import { fetchAllOrdersStatus } from "./utils/api"; // 🔥 add at top
 
 useEffect(() => {
   fetchAllOrdersStatus()
     .then((data) => {
+      console.log("API DATA:", data); // 👈 IMPORTANT
+
       const fixed = (data.orders || []).map((o: any) => ({
         ...o,
         id: o.schedulerOrderId,
