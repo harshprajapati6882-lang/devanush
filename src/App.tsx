@@ -143,7 +143,8 @@ function hydrateBundles(bundles: Bundle[]): Bundle[] {
 
 export default function App() {
   const token = localStorage.getItem("token");
-  if (!token) {
+
+if (!token) {
   return <LoginPage />;
 }
   const [activePage, setActivePage] = useState<NavKey>(() => {
