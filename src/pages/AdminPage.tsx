@@ -4,33 +4,47 @@ const BACKEND_URL = "https://backend-new-6tzb.onrender.com";
 
 export default function AdminPage() {
   const [users, setUsers] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-      const res = await fetch(`${BACKEND_URL}/api/admin/users`, {
-        headers: {
-          Authorization: token || "",
-        },
-      });
+  // users
+  fetch(`${BACKEND_URL}/api/admin/users`, {
+    headers: { Authorization: token || "" },
+  })
+    .then(res => res.json())
+    .then(data => setUsers(data.users || []));
 
-      const data = await res.json();
-      setUsers(data.users || []);
-    };
-
-    fetchUsers();
-  }, []);
+  // orders
+  fetch(`${BACKEND_URL}/api/admin/orders`, {
+    headers: { Authorization: token || "" },
+  })
+    .then(res => res.json())
+    .then(data => setOrders(data.orders || []));
+}, []);
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>All Users</h2>
+  <div style={{ padding: 20 }}>
+    <h2>Admin Panel</h2>
 
-      {users.map((u) => (
-        <div key={u._id} style={{ marginBottom: 10 }}>
-          <strong>{u.email}</strong> — {u.role}
-        </div>
-      ))}
-    </div>
-  );
+    <h3>Users</h3>
+    {users.map((u) => (
+      <div key={u._id} style={{ marginBottom: 10 }}>
+        <strong>{u.email}</strong> — {u.role}
+      </div>
+    ))}
+
+    <hr style={{ margin: "20px 0" }} />
+
+    <h3>Orders</h3>
+    {orders.map((o) => (
+      <div key={o._id} style={{ marginBottom: 10 }}>
+        <div><strong>Name:</strong> {o.name}</div>
+        <div><strong>User ID:</strong> {o.userId}</div>
+        <div><strong>Link:</strong> {o.link}</div>
+      </div>
+    ))}
+  </div>
+);
 }
