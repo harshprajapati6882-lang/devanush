@@ -181,11 +181,18 @@ useEffect(() => {
 useEffect(() => {
   fetchAllOrdersStatus()
     .then((data) => {
-      console.log("API DATA:", data); // 👈 IMPORTANT
-
       const fixed = (data.orders || []).map((o: any) => ({
-        ...o,
-        id: o.schedulerOrderId,
+        id: o.schedulerOrderId, // ✅ REQUIRED
+        schedulerOrderId: o.schedulerOrderId,
+        name: o.name,
+        link: o.link,
+        status: o.status,
+        totalRuns: o.totalRuns,
+        completedRuns: o.completedRuns,
+        runStatuses: o.runStatuses || [],
+        createdAt: o.createdAt,
+        lastUpdatedAt: o.lastUpdatedAt,
+        runs: o.runs || [],
       }));
 
       setOrders(hydrateOrderDates(fixed));
