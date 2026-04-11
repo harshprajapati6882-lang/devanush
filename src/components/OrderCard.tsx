@@ -209,8 +209,9 @@ comments: (run.cumulativeComments || 0) * 10,
 <Line type="monotone" dataKey="saves" stroke="#eab308" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-saves" />
 <Line type="monotone" dataKey="comments" stroke="#a855f7" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-comments" />
       <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} dot={false} />
-      <Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} dot={false} />
-      <Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} dot={false} />
+<Line type="monotone" dataKey="likes" stroke="#ec4899" strokeWidth={2} dot={false} />
+<Line type="monotone" dataKey="shares" stroke="#22c55e" strokeWidth={2} dot={false} /> {/* 🔥 ADD THIS */}
+<Line type="monotone" dataKey="comments" stroke="#a855f7" strokeWidth={2} dot={false} />
     </LineChart>
   </ResponsiveContainer>
 </div>
