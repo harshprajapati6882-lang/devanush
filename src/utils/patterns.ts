@@ -1378,11 +1378,22 @@ if (config.includeComments) {
   ? distributeByViewsProportional(provisionalRuns, commentsTotal, 1)
   : viewRuns.map(() => 0);
 
- let likesRuns = likesBase;
-  if (likesRuns.length > 0) {
-  if (likesRuns.length > 0) {
+ let likesRuns = [...likesBase]; // clone for safety
+
+if (likesRuns.length > 1) {
   const carry = likesRuns[0];
   likesRuns[0] = 0;
+
+  // move to strongest run (max likes)
+  let maxIndex = 1;
+  for (let i = 2; i < likesRuns.length; i++) {
+    if (likesRuns[i] > likesRuns[maxIndex]) {
+      maxIndex = i;
+    }
+  }
+
+  likesRuns[maxIndex] += carry;
+}
 
   // move to strongest run
   let maxIndex = 1;
