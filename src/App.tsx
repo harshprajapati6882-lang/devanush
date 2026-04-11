@@ -144,16 +144,8 @@ function hydrateBundles(bundles: Bundle[]): Bundle[] {
 }
 
 export default function App() {
-  const [token, setToken] = useState<string | null>(null);
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-useEffect(() => {
-  const storedToken = localStorage.getItem("token");
-  setToken(storedToken);
-}, []);
-
-if (token === null) {
-  return <div style={{ color: "white", padding: 20 }}>Loading...</div>;
-}
 if (!token) {
   return <LoginPage />;
 }
