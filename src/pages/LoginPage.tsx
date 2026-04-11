@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const BACKEND_URL = "https://backend-y30y.onrender.com";
+const BACKEND_URL = "https://backend-new-6tzb.onrender.com";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
