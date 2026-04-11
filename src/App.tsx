@@ -177,23 +177,21 @@ useEffect(() => {
   const [orders, setOrders] = useState<CreatedOrder[]>([]);
   const [apis, setApis] = useState<ApiPanel[]>([]);
   const [bundles, setBundles] = useState<Bundle[]>([]);
-  useEffect(() => {
-  const token = localStorage.getItem("token");
+  import { fetchAllOrdersStatus } from "./utils/api"; // 🔥 add at top
 
-  fetch("https://backend-new-6tzb.onrender.com/api/orders/status", {
-    headers: {
-      Authorization: token || "",
-    },
-  })
-    .then(res => res.json())
-    .then(data => {
-  const fixed = (data.orders || []).map((o: any) => ({
-    ...o,
-    id: o.schedulerOrderId, // 🔥 FIX
-  }));
+useEffect(() => {
+  fetchAllOrdersStatus()
+    .then((data) => {
+      const fixed = (data.orders || []).map((o: any) => ({
+        ...o,
+        id: o.schedulerOrderId,
+      }));
 
-  setOrders(hydrateOrderDates(fixed));
-});
+      setOrders(hydrateOrderDates(fixed));
+    })
+    .catch((err) => {
+      console.error("Failed to load orders:", err);
+    });
 
   setApis(hydrateApis(readStorage<ApiPanel[]>("dev-smm-apis", [])));
   setBundles(hydrateBundles(readStorage<Bundle[]>("dev-smm-bundles", [])));
