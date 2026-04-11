@@ -30,10 +30,29 @@ export default function AdminPage() {
 
     <h3>Users</h3>
     {users.map((u) => (
-      <div key={u._id} style={{ marginBottom: 10 }}>
-        <strong>{u.email}</strong> — {u.role}
-      </div>
-    ))}
+  <div key={u._id} style={{ marginBottom: 10 }}>
+    <strong>{u.email}</strong> — {u.role}
+
+    <button
+      style={{ marginLeft: 10 }}
+      onClick={async () => {
+        const token = localStorage.getItem("token");
+
+        await fetch(`${BACKEND_URL}/api/admin/user/${u._id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: token || "",
+          },
+        });
+
+        alert("User deleted");
+        window.location.reload();
+      }}
+    >
+      Delete
+    </button>
+  </div>
+))}
 
     <hr style={{ margin: "20px 0" }} />
 
