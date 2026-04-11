@@ -196,10 +196,12 @@ comments: (run.cumulativeComments || 0) * 10,
       <YAxis stroke="#666" />
 
       <Tooltip
-  contentStyle={{ backgroundColor: "#111", border: "1px solid #333" }}
-  labelFormatter={(time) => new Date(time).toLocaleString()}
-  formatter={(value, name) => [`${value}`, name.toUpperCase()]}
+  formatter={(value, name) => {
+    if (name?.startsWith("planned")) return null; // ❌ hide planned
+    return [value, name];
+  }}
 />
+
 
       {/* Planned (faded lines) */}
 <Line type="monotone" dataKey="views" stroke="#3b82f6" opacity={0.1} dot={false} strokeDasharray="5 5" name="planned-views" />
