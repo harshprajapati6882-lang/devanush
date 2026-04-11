@@ -186,7 +186,14 @@ useEffect(() => {
     },
   })
     .then(res => res.json())
-    .then(data => setOrders(hydrateOrderDates(data.orders || [])));
+    .then(data => {
+  const fixed = (data.orders || []).map((o: any) => ({
+    ...o,
+    id: o.schedulerOrderId, // 🔥 FIX
+  }));
+
+  setOrders(hydrateOrderDates(fixed));
+});
 
   setApis(hydrateApis(readStorage<ApiPanel[]>("dev-smm-apis", [])));
   setBundles(hydrateBundles(readStorage<Bundle[]>("dev-smm-bundles", [])));
