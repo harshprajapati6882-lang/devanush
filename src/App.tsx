@@ -13,17 +13,6 @@ import { cn } from "./utils/cn";
 
 type NavKey = "dashboard" | "new-order" | "orders" | "apis" | "bundles" | "admin";
 
-const NAV_ITEMS: { key: NavKey; label: string; icon: string }[] = [
-  ...(user?.role === "admin"
-    ? [{ key: "admin", label: "Admin", icon: "👑" }]
-    : []),
-
-  { key: "dashboard", label: "Dashboard", icon: "📊" },
-  { key: "new-order", label: "New Order", icon: "⚡" },
-  { key: "orders", label: "Orders", icon: "📦" },
-  { key: "apis", label: "APIs", icon: "🔗" },
-  { key: "bundles", label: "Bundles", icon: "📁" },
-];
 
 const BATMAN_QUOTES = [
   "It's not who I am underneath, but what I do that defines me.",
@@ -150,6 +139,21 @@ function hydrateBundles(bundles: Bundle[]): Bundle[] {
 
 export default function App() {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const user = typeof window !== "undefined"
+  ? JSON.parse(localStorage.getItem("user") || "null")
+  : null;
+
+const NAV_ITEMS: { key: NavKey; label: string; icon: string }[] = [
+  ...(user?.role === "admin"
+    ? [{ key: "admin", label: "Admin", icon: "👑" }]
+    : []),
+
+  { key: "dashboard", label: "Dashboard", icon: "📊" },
+  { key: "new-order", label: "New Order", icon: "⚡" },
+  { key: "orders", label: "Orders", icon: "📦" },
+  { key: "apis", label: "APIs", icon: "🔗" },
+  { key: "bundles", label: "Bundles", icon: "📁" },
+];
   const user = typeof window !== "undefined"
   ? JSON.parse(localStorage.getItem("user") || "null")
   : null;
