@@ -27,7 +27,6 @@ export default function LoginPage() {
       }
 
       // 🔥 THIS IS STEP 3.8 (you were confused here)
-      localStorage.clear(); // 🔥 clear old user data
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
