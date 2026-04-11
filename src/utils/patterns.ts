@@ -1050,7 +1050,16 @@ function distributeLikesProportional(runs: { views: number }[], targetTotal: num
   const baseShares = runs.map((run) => (Math.max(0, run.views) / totalViews) * likesTarget);
   const withVariation = baseShares.map((base) => base * random(0.8, 1.2));
 
-  const preliminary = withVariation.map((value) => Math.max(minimumPerRun, Math.round(value)));
+  const preliminary = withVariation.map((value) => {
+  const base = Math.round(value);
+
+  // 🔥 allow variation instead of forcing 10
+  if (base < minimumPerRun) {
+    return randomInt(10, 14); // early low but not flat
+  }
+
+  return clamp(base + randomInt(-3, 3), 10, 20);
+});
   const baseFloor = runs.length * minimumPerRun;
   const currentExtra = preliminary.reduce((sum, value) => sum + (value - minimumPerRun), 0);
   const targetExtra = Math.max(0, likesTarget - baseFloor);
@@ -1059,6 +1068,19 @@ function distributeLikesProportional(runs: { views: number }[], targetTotal: num
     currentExtra > 0
       ? preliminary.map((value) => minimumPerRun + Math.max(0, Math.round((value - minimumPerRun) * (targetExtra / currentExtra))))
       : Array.from({ length: runs.length }, () => minimumPerRun);
+  // 🔥 break flat 10 pattern (CORRECT POSITION)
+for (let i = 1; i < scaled.length; i++) {
+  if (scaled[i] === 10) {
+    scaled[i] = randomInt(12, 18);
+  }
+}
+  // prevent same consecutive values
+for (let i = 1; i < scaled.length; i++) {
+  if (scaled[i] === scaled[i - 1]) {
+    scaled[i] += Math.random() < 0.5 ? -1 : 1;
+    scaled[i] = clamp(scaled[i], 10, 20);
+  }
+}
 
   let drift = likesTarget - scaled.reduce((sum, value) => sum + value, 0);
   const weightedIndexes = runs
@@ -1085,18 +1107,6 @@ function distributeLikesProportional(runs: { views: number }[], targetTotal: num
       }
       pointer += 1;
       guard += 1;
-    }
-  }
-
-  for (let index = 1; index < scaled.length; index += 1) {
-    if (scaled[index] === scaled[index - 1]) {
-      const direction = Math.random() < 0.5 ? -1 : 1;
-      const next = scaled[index] + direction;
-      if (next >= minimumPerRun) {
-        scaled[index] = next;
-      } else {
-        scaled[index] += 1;
-      }
     }
   }
 
