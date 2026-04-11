@@ -112,7 +112,7 @@ function hydrateOrderDates(orders: CreatedOrder[]): CreatedOrder[] {
     : "running",
       completedRuns: Number.isFinite(order?.completedRuns) ? order.completedRuns : 0,
       runStatuses: safeRunStatuses,
-      runErrors: safeRunErrors,
+      runErrors: [],
       runRetries: order?.runRetries || [],
       runOriginalTimes: order?.runOriginalTimes || [],
       runCurrentTimes: order?.runCurrentTimes || [],
