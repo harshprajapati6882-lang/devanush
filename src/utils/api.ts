@@ -67,19 +67,7 @@ interface OrderStatusResult {
 
 const BACKEND_BASE_URL =
   (import.meta.env.VITE_BACKEND_URL as string | undefined)?.trim() ||
-  "https://backend-new-6tzb.onrender.com";
-
-function getToken() {
-  return localStorage.getItem("token");
-}
-
-function getAuthHeaders() {
-  const token = getToken();
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
+  "https://backend-y30y.onrender.com";
 
 interface RawService {
   service?: string | number;
@@ -104,7 +92,9 @@ export async function fetchServices(apiUrl: string, apiKey: string): Promise<Api
   try {
     response = await fetch(endpoint, {
       method: "POST",
-      headers: getAuthHeaders(),
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ apiUrl, apiKey }),
     });
   } catch (error) {
@@ -176,7 +166,9 @@ export async function createSmmOrder(payload: CreateOrderPayload): Promise<Creat
   try {
     response = await fetch(endpoint, {
       method: "POST",
-      headers: getAuthHeaders(),
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(payload),
     });
   } catch (error) {
@@ -294,7 +286,9 @@ export async function updateOrderControl(payload: {
     try {
       const response = await fetch(endpoint, {
         method: "POST",
-        headers: getAuthHeaders(),
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
 
@@ -371,7 +365,9 @@ export async function fetchOrderRuns(schedulerOrderId: string): Promise<FetchOrd
   try {
     const response = await fetch(endpoint, {
       method: "GET",
-      headers: getAuthHeaders(),
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (!response.ok) {
@@ -397,7 +393,9 @@ export async function fetchOrderStatus(schedulerOrderId: string): Promise<OrderS
   try {
     const response = await fetch(endpoint, {
       method: "GET",
-      headers: getAuthHeaders(),
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (!response.ok) {
@@ -421,7 +419,9 @@ export async function fetchAllOrdersStatus(): Promise<{
   try {
     const response = await fetch(endpoint, {
       method: "GET",
-      headers: getAuthHeaders(),
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (!response.ok) {
@@ -456,7 +456,9 @@ export async function updateMinViewsSetting(minViewsPerRun: number): Promise<{ s
   try {
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: getAuthHeaders(),
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ minViewsPerRun }),
     });
 
